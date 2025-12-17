@@ -197,27 +197,7 @@ To improve model performance:
 4. **Feature Engineering**: Add character-level features, text length, sentiment lexicons
 5. **Data Augmentation**: Use back-translation, synonym replacement
 
-## 🤝 Contributing
 
-Contributions are welcome! Please feel free to submit issues or pull requests.
-
-## 📝 License
-
-This project is available for educational and research purposes.
-
-## 👥 Authors
-
-- Your Name/Team Name
-
-## 🙏 Acknowledgments
-
-- Dataset contributors
-- Khmer NLP community
-- Scikit-learn and XGBoost teams
-
-## 📞 Contact
-
-For questions or feedback, please contact [your email].
 
 ---
 
