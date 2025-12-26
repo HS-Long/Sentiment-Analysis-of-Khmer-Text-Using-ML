@@ -1,186 +1,211 @@
 """
-Model evaluation and visualization module
+Model Evaluation Module
+
+This module provides functions for evaluating model performance,
+generating reports, and visualizing results.
 """
 
-import numpy as np
 import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-from sklearn.metrics import classification_report, accuracy_score, confusion_matrix, f1_score
+from sklearn.metrics import (
+    classification_report,
+    accuracy_score,
+    f1_score,
+    precision_score,
+    recall_score,
+    confusion_matrix
+)
+from typing import Dict, List, Optional
 
 
-def evaluate_model(model, X_test, y_test, label_encoder=None, model_name="Model"):
+def evaluate_model(y_true, y_pred, target_names: List[str] = None) -> Dict:
     """
-    Evaluate a trained model and print metrics
+    Evaluate model performance with multiple metrics.
     
     Args:
-        model: Trained model
-        X_test: Test features
-        y_test: Test labels
-        label_encoder: LabelEncoder object for class names
-        model_name (str): Name of the model for display
+        y_true: True labels
+        y_pred: Predicted labels
+        target_names: List of class names
         
     Returns:
-        dict: Dictionary containing predictions and metrics
+        Dictionary containing evaluation metrics
     """
-    # Make predictions
-    y_pred = model.predict(X_test)
+    if target_names is None:
+        target_names = ["neg", "neu", "pos"]
     
-    # Calculate metrics
-    accuracy = accuracy_score(y_test, y_pred)
-    f1 = f1_score(y_test, y_pred, average='macro')
-    
-    print(f"\n{'='*50}")
-    print(f"{model_name} Evaluation")
-    print(f"{'='*50}")
-    print(f"Test Accuracy: {accuracy:.4f}")
-    print(f"F1 Score (Macro): {f1:.4f}")
-    
-    # Get class names
-    if label_encoder is not None:
-        target_names = [label_encoder.classes_[i] for i in sorted(np.unique(y_test))]
-    else:
-        target_names = [str(i) for i in sorted(np.unique(y_test))]
-    
-    # Print classification report
-    print("\nClassification Report:")
-    print(classification_report(y_test, y_pred, target_names=target_names))
-    
-    return {
-        'predictions': y_pred,
-        'accuracy': accuracy,
-        'f1_score': f1,
-        'target_names': target_names
+    metrics = {
+        'accuracy': accuracy_score(y_true, y_pred),
+        'f1_macro': f1_score(y_true, y_pred, average='macro'),
+        'precision_macro': precision_score(y_true, y_pred, average='macro'),
+        'recall_macro': recall_score(y_true, y_pred, average='macro')
     }
+    
+    # Print detailed classification report
+    print(classification_report(y_true, y_pred, target_names=target_names))
+    
+    return metrics
 
 
-def plot_confusion_matrix(y_test, y_pred, target_names, model_name="Model", 
-                         cmap='Blues', save_path=None):
+def compare_models(models: Dict, X_test, y_test, le=None) -> pd.DataFrame:
     """
-    Plot confusion matrix
+    Compare performance of multiple models.
     
     Args:
-        y_test: True labels
+        models: Dictionary of trained models
+        X_test: Test features
+        y_test: Test labels
+        le: Label encoder (for XGBoost)
+        
+    Returns:
+        DataFrame with comparison results
+    """
+    comparison_results = []
+    
+    for name, model in models.items():
+        if name == "XGBoost" and le is not None:
+            y_pred = model.predict(X_test)
+            y_pred_labels = le.inverse_transform(y_pred)
+            y_test_labels = y_test
+        else:
+            y_pred_labels = model.predict(X_test)
+            y_test_labels = y_test
+        
+        result = {
+            'Model': name,
+            'Accuracy': accuracy_score(y_test_labels, y_pred_labels),
+            'F1-Macro': f1_score(y_test_labels, y_pred_labels, average='macro'),
+            'Precision-Macro': precision_score(y_test_labels, y_pred_labels, average='macro'),
+            'Recall-Macro': recall_score(y_test_labels, y_pred_labels, average='macro'),
+            'Best CV Score': model.best_score_ if hasattr(model, 'best_score_') else 0
+        }
+        comparison_results.append(result)
+    
+    comparison_df = pd.DataFrame(comparison_results)
+    comparison_df = comparison_df.round(4)
+    comparison_df = comparison_df.sort_values('F1-Macro', ascending=False)
+    
+    return comparison_df
+
+
+def plot_confusion_matrix(y_true, y_pred, labels: List[str] = None, figsize: tuple = (8, 6)):
+    """
+    Plot confusion matrix heatmap.
+    
+    Args:
+        y_true: True labels
         y_pred: Predicted labels
-        target_names (list): List of class names
-        model_name (str): Name of the model for title
-        cmap (str): Color map for heatmap
-        save_path (str, optional): Path to save the plot
+        labels: List of class labels
+        figsize: Figure size
     """
-    plt.figure(figsize=(8, 6))
-    cm = confusion_matrix(y_test, y_pred)
-    sns.heatmap(cm, annot=True, fmt='d', cmap=cmap, 
-                xticklabels=target_names,
-                yticklabels=target_names)
-    plt.title(f'{model_name} - Confusion Matrix', fontsize=14, fontweight='bold')
-    plt.xlabel('Predicted')
-    plt.ylabel('Actual')
+    if labels is None:
+        labels = ["neg", "neu", "pos"]
+    
+    cm = confusion_matrix(y_true, y_pred)
+    
+    plt.figure(figsize=figsize)
+    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', 
+                xticklabels=labels, yticklabels=labels)
+    plt.title('Confusion Matrix', fontsize=14, fontweight='bold')
+    plt.ylabel('True Label', fontsize=12)
+    plt.xlabel('Predicted Label', fontsize=12)
     plt.tight_layout()
-    
-    if save_path:
-        plt.savefig(save_path, dpi=300, bbox_inches='tight')
-        print(f"Plot saved to {save_path}")
-    
     plt.show()
 
 
-def plot_sentiment_distribution(df, target_column='target', save_path=None):
+def plot_model_comparison(comparison_df: pd.DataFrame, figsize: tuple = (12, 7)):
     """
-    Plot distribution of sentiment labels
+    Plot model comparison bar chart.
     
     Args:
-        df (pd.DataFrame): Dataframe with target column
-        target_column (str): Name of the target column
-        save_path (str, optional): Path to save the plot
+        comparison_df: DataFrame with model comparison results
+        figsize: Figure size
     """
-    plt.figure(figsize=(8, 6))
-    ax = sns.countplot(x=target_column, data=df, 
-                       order=df[target_column].value_counts().index, 
-                       palette="viridis", stat="percent")
+    fig, ax = plt.subplots(figsize=figsize)
+    x = np.arange(len(comparison_df))
+    width = 0.2
     
-    # Show percentages on graph
-    for p in ax.patches:
-        height = p.get_height()
-        ax.annotate(f'{height:.1f}%', (p.get_x() + p.get_width() / 2, height), 
-                   ha='center', va='bottom')
+    metrics = ['Accuracy', 'F1-Macro', 'Precision-Macro', 'Recall-Macro']
+    colors = ['#3498db', '#e74c3c', '#2ecc71', '#f39c12']
     
-    plt.title("Distribution of Sentiment Labels")
-    plt.xlabel("Sentiment")
-    plt.ylabel("Percentage")
-    plt.tight_layout()
+    for i, metric in enumerate(metrics):
+        ax.bar(x + i*width, comparison_df[metric], width, label=metric, color=colors[i])
     
-    if save_path:
-        plt.savefig(save_path, dpi=300, bbox_inches='tight')
-        print(f"Plot saved to {save_path}")
-    
-    plt.show()
-
-
-def compare_models(results_dict, save_path=None):
-    """
-    Compare multiple models and visualize results
-    
-    Args:
-        results_dict (dict): Dictionary mapping model names to accuracy scores
-        save_path (str, optional): Path to save the plot
-    """
-    # Create comparison dataframe
-    model_comparison = pd.DataFrame({
-        'Model': list(results_dict.keys()),
-        'Accuracy': list(results_dict.values())
-    })
-    
-    model_comparison = model_comparison.sort_values('Accuracy', ascending=False)
-    print("\nModel Comparison:")
-    print(model_comparison.to_string(index=False))
-    
-    # Visualize comparison
-    plt.figure(figsize=(12, 6))
-    colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA15E']
-    bars = plt.bar(range(len(model_comparison)), model_comparison['Accuracy'], 
-                   color=colors[:len(model_comparison)])
-    
-    plt.xlabel('Model', fontsize=12, fontweight='bold')
-    plt.ylabel('Accuracy', fontsize=12, fontweight='bold')
-    plt.title('Model Performance Comparison', fontsize=14, fontweight='bold')
-    plt.xticks(range(len(model_comparison)), model_comparison['Model'], 
-               rotation=45, ha='right')
-    plt.ylim([0, 1])
+    ax.set_xlabel('Models', fontsize=12, fontweight='bold')
+    ax.set_ylabel('Score', fontsize=12, fontweight='bold')
+    ax.set_title('Khmer Sentiment Analysis - Model Performance Comparison', 
+                 fontsize=14, fontweight='bold', pad=20)
+    ax.set_xticks(x + width * 1.5)
+    ax.set_xticklabels(comparison_df['Model'], rotation=45, ha='right')
+    ax.legend(loc='lower right', fontsize=10)
+    ax.grid(axis='y', alpha=0.3)
+    ax.set_ylim(0, 1.0)
     
     # Add value labels on bars
-    for i, (bar, acc) in enumerate(zip(bars, model_comparison['Accuracy'])):
-        plt.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.01, 
-                f'{acc:.2%}', ha='center', va='bottom', fontweight='bold')
+    for i, metric in enumerate(metrics):
+        for j, value in enumerate(comparison_df[metric]):
+            ax.text(j + i*width, value + 0.01, f'{value:.3f}', 
+                    ha='center', va='bottom', fontsize=8)
     
     plt.tight_layout()
-    plt.grid(axis='y', alpha=0.3)
-    
-    if save_path:
-        plt.savefig(save_path, dpi=300, bbox_inches='tight')
-        print(f"Plot saved to {save_path}")
-    
     plt.show()
-    
-    # Print best model
-    best_model = model_comparison.iloc[0]
-    print(f"\n🎯 Best Model: {best_model['Model']}")
-    print(f"   Accuracy: {best_model['Accuracy']:.2%}")
-    
-    return model_comparison
 
 
-def save_results(results_dict, filepath):
+def plot_lstm_history(history, figsize: tuple = (14, 5)):
     """
-    Save evaluation results to a CSV file
+    Plot LSTM training history (accuracy and loss).
     
     Args:
-        results_dict (dict): Dictionary mapping model names to accuracy scores
-        filepath (str): Path to save the CSV file
+        history: Keras training history object
+        figsize: Figure size
     """
-    df = pd.DataFrame({
-        'Model': list(results_dict.keys()),
-        'Accuracy': list(results_dict.values())
-    })
-    df = df.sort_values('Accuracy', ascending=False)
-    df.to_csv(filepath, index=False)
-    print(f"Results saved to {filepath}")
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=figsize)
+    
+    # Plot accuracy
+    ax1.plot(history.history['accuracy'], label='Training Accuracy', marker='o')
+    ax1.plot(history.history['val_accuracy'], label='Validation Accuracy', marker='s')
+    ax1.set_title('BiLSTM Model Accuracy', fontsize=14, fontweight='bold')
+    ax1.set_xlabel('Epoch', fontsize=12)
+    ax1.set_ylabel('Accuracy', fontsize=12)
+    ax1.legend()
+    ax1.grid(True, alpha=0.3)
+    
+    # Plot loss
+    ax2.plot(history.history['loss'], label='Training Loss', marker='o')
+    ax2.plot(history.history['val_loss'], label='Validation Loss', marker='s')
+    ax2.set_title('BiLSTM Model Loss', fontsize=14, fontweight='bold')
+    ax2.set_xlabel('Epoch', fontsize=12)
+    ax2.set_ylabel('Loss', fontsize=12)
+    ax2.legend()
+    ax2.grid(True, alpha=0.3)
+    
+    plt.tight_layout()
+    plt.show()
+
+
+def analyze_errors(df: pd.DataFrame, y_test, y_pred, X_test, num_examples: int = 10):
+    """
+    Analyze and display misclassified examples.
+    
+    Args:
+        df: Original DataFrame with text
+        y_test: True labels
+        y_pred: Predicted labels
+        X_test: Test indices
+        num_examples: Number of examples to display
+    """
+    misclassified_idx = X_test.index[y_test != y_pred].tolist()
+    
+    print("="*80)
+    print("SAMPLE MISCLASSIFICATIONS - Understanding Khmer Sentiment Challenges")
+    print("="*80)
+    
+    for i, idx in enumerate(misclassified_idx[:num_examples]):
+        print(f"\nExample {i+1}:")
+        print(f"Text: {df.loc[idx, 'text'][:100]}...")
+        if 'text_clean' in df.columns:
+            print(f"Cleaned: {df.loc[idx, 'text_clean'][:100]}...")
+        print(f"True Sentiment: {y_test.loc[idx]}")
+        print(f"Predicted: {y_pred[list(X_test.index).index(idx)]}")
+        print("-" * 80)

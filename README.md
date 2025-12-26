@@ -30,7 +30,147 @@ PROJECT/
 ├── models/                             # Saved trained models
 ├── results/                            # Results and plots
 ├── requirements.txt                    # Python dependencies
-└── README.md                           # This file
+└── # Khmer Sentiment Analysis Using Machine Learning
+
+## 📋 Project Overview
+
+This project performs comprehensive sentiment analysis on Khmer text data using multiple machine learning approaches, from traditional ML to deep learning models. The goal is to classify Khmer social media posts, reviews, or news comments into three sentiment categories: **positive**, **neutral**, and **negative**.
+
+## 🎯 Key Features
+
+- **Khmer-Specific Preprocessing**: Unicode normalization (NFC), slang handling, special character removal
+- **Multiple ML Models Comparison**:
+  - Traditional ML: Logistic Regression, SVM, Naive Bayes
+  - Deep Learning: Bidirectional LSTM
+- **Comprehensive Evaluation**: Confusion matrices, per-class metrics, error analysis
+- **Class Imbalance Handling**: Balanced class weights for fair evaluation
+- **Visualization**: Performance comparison charts and training curves
+
+## 📁 Project Structure
+
+```
+PROJECT/
+│
+├── Model.ipynb              # Main notebook with all analysis
+├── README.md                # Project documentation
+├── requirements.txt         # Python dependencies
+│
+├── data/
+│   ├── Data Collection - Sheet1.csv  # Original data
+│   └── data_cleaned_all.csv          # Cleaned dataset (1057 samples)
+│
+├── models/                  # Saved models (generated after training)
+│   ├── best_lr_model.pkl
+│   ├── lstm_model.h5
+│   └── lstm_tokenizer.pkl
+│
+└── src/
+    └── clean_space.py       # Utility scripts
+```
+
+## 🔧 Installation
+
+1. **Clone or download this project**
+
+2. **Install dependencies**:
+```bash
+pip install -r requirements.txt
+```
+
+3. **Required Python Version**: Python 3.8 or higher
+
+## 📊 Dataset
+
+- **Size**: 1,057 Khmer text samples
+- **Classes**: 
+  - Positive
+  - Negative  
+  - Neutral
+- **Source**: Social media posts and news comments in Khmer language
+- **Format**: CSV with columns: `text`, `target`
+
+## 🚀 Usage
+
+1. **Open the Jupyter Notebook**:
+```bash
+jupyter notebook Model.ipynb
+```
+
+2. **Run cells sequentially**:
+   - Load and explore data
+   - Preprocess Khmer text
+   - Train traditional ML models (LR, SVM, NB)
+   - Train LSTM model
+   - Compare model performance
+   - Analyze errors and visualize results
+
+3. **Make predictions on new text**:
+```python
+# Example prediction
+new_text = "ខ្ញុំចូលចិត្តផលិតផលនេះណាស់"
+new_text_clean = preprocess_khmer(new_text)
+prediction = best_model.predict([new_text_clean])
+print(f"Sentiment: {prediction[0]}")
+```
+
+## 📈 Model Performance
+
+The notebook includes comprehensive comparison of all models with:
+- Accuracy scores
+- F1-Macro and F1-Weighted scores
+- Confusion matrices
+- Per-class precision, recall, F1-score
+- Training curves (for LSTM)
+
+## 🔍 Khmer-Specific Challenges Addressed
+
+1. **Unicode Normalization**: Proper handling of Khmer Unicode (NFD → NFC)
+2. **Slang Handling**: Dictionary-based normalization of informal Khmer
+3. **Special Markers**: Removal of URL artifacts and special symbols
+4. **Character Range**: Preservation of Khmer Unicode range (U+1780 to U+17FF)
+5. **Class Imbalance**: Balanced class weights for minority classes
+
+## 🎓 Key Findings & Recommendations
+
+### Current Limitations:
+- Small dataset (~1000 samples) limits deep learning performance
+- Limited slang dictionary coverage
+- No BERT-based models yet
+
+### Future Improvements:
+1. **Expand Dataset**: Target 5,000-10,000+ samples
+2. **Add BERT Models**: Fine-tune mBERT or XLM-RoBERTa
+3. **Enhanced Preprocessing**: Comprehensive slang dictionary, negation handling
+4. **Feature Engineering**: Character n-grams, text length features
+5. **Cross-Validation**: K-fold CV for robust evaluation
+
+## 📚 Requirements
+
+See [requirements.txt](requirements.txt) for full list. Main dependencies:
+- pandas, numpy
+- scikit-learn (traditional ML)
+- tensorflow/keras (LSTM)
+- matplotlib, seaborn (visualization)
+
+## 🤝 Contributing
+
+To improve this project:
+1. Expand the labeled Khmer dataset
+2. Add more slang mappings to the preprocessing function
+3. Implement BERT-based models
+4. Enhance error analysis with linguistic features
+
+## 📝 License
+
+This project is for educational purposes. Feel free to use and modify.
+
+## 👤 Author
+
+Created as part of the I5-AMS WR project focusing on Khmer NLP and sentiment analysis.
+
+---
+
+**Note**: This project demonstrates practical implementation of sentiment analysis on a low-resource language (Khmer) with limited data. Performance can be significantly improved with more training data and advanced models.                           # This file
 ```
 
 ## 🚀 Getting Started

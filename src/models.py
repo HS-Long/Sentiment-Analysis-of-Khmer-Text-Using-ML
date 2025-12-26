@@ -1,293 +1,192 @@
 """
-Machine learning models module for Khmer sentiment analysis
+Machine Learning Models Module
+
+This module provides functions for training and evaluating various
+machine learning models for Khmer sentiment analysis.
 """
 
-import numpy as np
+from sklearn.pipeline import Pipeline
 from sklearn.linear_model import LogisticRegression
-from sklearn.svm import SVC
+from sklearn.svm import LinearSVC
 from sklearn.naive_bayes import MultinomialNB
-from sklearn.ensemble import RandomForestClassifier, VotingClassifier
-from sklearn.model_selection import GridSearchCV
-from sklearn.utils.class_weight import compute_class_weight
-import joblib
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import RandomizedSearchCV
+from typing import Dict, Any, Optional
 
 
-def calculate_class_weights(y_train):
+def create_logistic_regression_pipeline(tfidf, class_weight: Dict) -> Pipeline:
     """
-    Calculate class weights for imbalanced datasets
+    Create a Logistic Regression pipeline with TF-IDF.
     
     Args:
-        y_train: Training labels
+        tfidf: TfidfVectorizer instance
+        class_weight: Class weight dictionary
         
     Returns:
-        dict: Dictionary mapping class indices to weights
+        sklearn Pipeline with TF-IDF and Logistic Regression
     """
-    class_weights = compute_class_weight(
-        class_weight="balanced",
-        classes=np.unique(y_train),
-        y=y_train
-    )
-    
-    class_weight_dict = {
-        i: class_weights[i] for i in range(len(class_weights))
-    }
-    
-    return class_weight_dict
+    pipeline = Pipeline([
+        ("tfidf", tfidf),
+        ("clf", LogisticRegression(
+            class_weight=class_weight,
+            max_iter=2000
+        ))
+    ])
+    return pipeline
 
 
-def train_logistic_regression(X_train, y_train, class_weights=None, 
-                               use_grid_search=True):
+def create_svm_pipeline(tfidf, class_weight: Dict) -> Pipeline:
     """
-    Train Logistic Regression model with optional grid search
+    Create a Linear SVM pipeline with TF-IDF.
     
     Args:
-        X_train: Training features
-        y_train: Training labels
-        class_weights (dict, optional): Class weights
-        use_grid_search (bool): Whether to use grid search
+        tfidf: TfidfVectorizer instance
+        class_weight: Class weight dictionary
         
     Returns:
-        Trained model
+        sklearn Pipeline with TF-IDF and LinearSVC
     """
-    if class_weights is None:
-        class_weights = calculate_class_weights(y_train)
+    pipeline = Pipeline([
+        ("tfidf", tfidf),
+        ("clf", LinearSVC(class_weight=class_weight))
+    ])
+    return pipeline
+
+
+def create_naive_bayes_pipeline(tfidf) -> Pipeline:
+    """
+    Create a Naive Bayes pipeline with TF-IDF.
     
-    log_reg = LogisticRegression(class_weight=class_weights, max_iter=1000)
-    
-    if use_grid_search:
-        param_grid = {
-            "C": [0.01, 0.1, 1, 10],
-            "solver": ["lbfgs", "saga", "newton-cg"]
-        }
+    Args:
+        tfidf: TfidfVectorizer instance
         
-        grid_search = GridSearchCV(
-            log_reg,
-            param_grid,
-            scoring="f1_macro",
-            cv=2,
+    Returns:
+        sklearn Pipeline with TF-IDF and MultinomialNB
+    """
+    pipeline = Pipeline([
+        ("tfidf", tfidf),
+        ("clf", MultinomialNB())
+    ])
+    return pipeline
+
+
+def create_random_forest_pipeline(tfidf, class_weight: Dict) -> Pipeline:
+    """
+    Create a Random Forest pipeline with TF-IDF.
+    
+    Args:
+        tfidf: TfidfVectorizer instance
+        class_weight: Class weight dictionary
+        
+    Returns:
+        sklearn Pipeline with TF-IDF and RandomForestClassifier
+    """
+    pipeline = Pipeline([
+        ("tfidf", tfidf),
+        ("clf", RandomForestClassifier(
+            class_weight=class_weight,
+            random_state=42,
             n_jobs=-1
-        )
-        
-        grid_search.fit(X_train, y_train)
-        print(f"Best parameters: {grid_search.best_params_}")
-        return grid_search
-    else:
-        log_reg.fit(X_train, y_train)
-        return log_reg
+        ))
+    ])
+    return pipeline
 
 
-def train_svm(X_train, y_train, class_weights=None, use_grid_search=True):
+def create_xgboost_pipeline(tfidf) -> Optional[Pipeline]:
     """
-    Train SVM model with optional grid search
+    Create an XGBoost pipeline with TF-IDF.
     
     Args:
-        X_train: Training features
-        y_train: Training labels
-        class_weights (dict, optional): Class weights
-        use_grid_search (bool): Whether to use grid search
+        tfidf: TfidfVectorizer instance
         
     Returns:
-        Trained model
-    """
-    if class_weights is None:
-        class_weights = calculate_class_weights(y_train)
-    
-    svm = SVC(class_weight=class_weights)
-    
-    if use_grid_search:
-        param_grid = {
-            "C": [0.1, 1, 10],
-            "kernel": ["linear", "rbf"]
-        }
-        
-        grid_search = GridSearchCV(
-            svm,
-            param_grid,
-            scoring="f1_macro",
-            cv=2,
-            n_jobs=-1
-        )
-        
-        grid_search.fit(X_train, y_train)
-        print(f"Best parameters: {grid_search.best_params_}")
-        return grid_search
-    else:
-        svm.fit(X_train, y_train)
-        return svm
-
-
-def train_naive_bayes(X_train, y_train, use_grid_search=True):
-    """
-    Train Naive Bayes model with optional grid search
-    
-    Args:
-        X_train: Training features
-        y_train: Training labels
-        use_grid_search (bool): Whether to use grid search
-        
-    Returns:
-        Trained model
-    """
-    nb = MultinomialNB()
-    
-    if use_grid_search:
-        param_grid = {
-            "alpha": [0.1, 0.5, 1.0, 2.0]
-        }
-        
-        grid_search = GridSearchCV(
-            nb,
-            param_grid,
-            scoring="f1_macro",
-            cv=2,
-            n_jobs=-1
-        )
-        
-        grid_search.fit(X_train, y_train)
-        print(f"Best parameters: {grid_search.best_params_}")
-        return grid_search
-    else:
-        nb.fit(X_train, y_train)
-        return nb
-
-
-def train_random_forest(X_train, y_train, class_weights=None, 
-                       use_grid_search=True):
-    """
-    Train Random Forest model with optional grid search
-    
-    Args:
-        X_train: Training features
-        y_train: Training labels
-        class_weights (dict, optional): Class weights
-        use_grid_search (bool): Whether to use grid search
-        
-    Returns:
-        Trained model
-    """
-    if class_weights is None:
-        class_weights = calculate_class_weights(y_train)
-    
-    rf = RandomForestClassifier(class_weight=class_weights, random_state=42)
-    
-    if use_grid_search:
-        param_grid = {
-            "n_estimators": [100, 200],
-            "max_depth": [10, 20, None],
-            "min_samples_split": [2, 5]
-        }
-        
-        grid_search = GridSearchCV(
-            rf,
-            param_grid,
-            scoring="f1_macro",
-            cv=3,
-            n_jobs=-1
-        )
-        
-        grid_search.fit(X_train, y_train)
-        print(f"Best parameters: {grid_search.best_params_}")
-        return grid_search
-    else:
-        rf.fit(X_train, y_train)
-        return rf
-
-
-def train_xgboost(X_train, y_train, class_weights=None, use_grid_search=True):
-    """
-    Train XGBoost model with optional grid search
-    
-    Args:
-        X_train: Training features
-        y_train: Training labels
-        class_weights (dict, optional): Class weights
-        use_grid_search (bool): Whether to use grid search
-        
-    Returns:
-        Trained model
+        sklearn Pipeline with TF-IDF and XGBClassifier, or None if XGBoost not installed
     """
     try:
-        from xgboost import XGBClassifier
+        import xgboost as xgb
+        pipeline = Pipeline([
+            ("tfidf", tfidf),
+            ("clf", xgb.XGBClassifier(
+                objective='multi:softmax',
+                num_class=3,
+                random_state=42,
+                n_jobs=-1,
+                eval_metric='mlogloss'
+            ))
+        ])
+        return pipeline
     except ImportError:
-        raise ImportError("XGBoost is not installed. Install it with: pip install xgboost")
-    
-    if class_weights is None:
-        class_weights = calculate_class_weights(y_train)
-    
-    # Convert to sample weights for training
-    train_weights = np.array([class_weights[y] for y in y_train])
-    
-    xgb = XGBClassifier(random_state=42, eval_metric='mlogloss')
-    
-    if use_grid_search:
-        param_grid = {
-            "n_estimators": [100, 200],
-            "max_depth": [3, 5, 7],
-            "learning_rate": [0.01, 0.1, 0.3]
-        }
-        
-        grid_search = GridSearchCV(
-            xgb,
-            param_grid,
-            scoring="f1_macro",
-            cv=3,
-            n_jobs=-1
-        )
-        
-        grid_search.fit(X_train, y_train, sample_weight=train_weights)
-        print(f"Best parameters: {grid_search.best_params_}")
-        return grid_search
-    else:
-        xgb.fit(X_train, y_train, sample_weight=train_weights)
-        return xgb
+        print("⚠ XGBoost not installed. Skipping XGBoost model.")
+        return None
 
 
-def train_voting_classifier(X_train, y_train, models_dict):
+def get_hyperparameter_grids() -> Dict[str, Dict[str, Any]]:
     """
-    Train a Voting Classifier ensemble
+    Get hyperparameter search grids for all models.
+    
+    Returns:
+        Dictionary mapping model names to their hyperparameter grids
+    """
+    grids = {
+        "lr": {
+            "clf__C": [0.01, 0.1, 1, 5, 10],
+            "clf__solver": ["lbfgs", "saga"]
+        },
+        "svm": {
+            "clf__C": [0.01, 0.1, 1, 5, 10]
+        },
+        "nb": {
+            "clf__alpha": [0.1, 0.5, 1.0, 2.0]
+        },
+        "rf": {
+            "clf__n_estimators": [100, 200, 300],
+            "clf__max_depth": [10, 20, 30, None],
+            "clf__min_samples_split": [2, 5]
+        },
+        "xgb": {
+            "clf__n_estimators": [100, 200, 300],
+            "clf__max_depth": [3, 5, 7],
+            "clf__learning_rate": [0.01, 0.1, 0.3]
+        }
+    }
+    return grids
+
+
+def train_model_with_search(
+    pipeline: Pipeline,
+    param_grid: Dict[str, Any],
+    X_train,
+    y_train,
+    n_iter: int = 10,
+    cv: int = 3,
+    scoring: str = "f1_macro",
+    random_state: int = 42
+) -> RandomizedSearchCV:
+    """
+    Train a model using RandomizedSearchCV for hyperparameter tuning.
     
     Args:
+        pipeline: sklearn Pipeline
+        param_grid: Hyperparameter search space
         X_train: Training features
         y_train: Training labels
-        models_dict (dict): Dictionary of (name, model) pairs
+        n_iter: Number of parameter settings to sample
+        cv: Number of cross-validation folds
+        scoring: Scoring metric
+        random_state: Random seed
         
     Returns:
-        Trained voting classifier
+        Trained RandomizedSearchCV object
     """
-    estimators = [(name, model.best_estimator_ if hasattr(model, 'best_estimator_') else model) 
-                  for name, model in models_dict.items()]
-    
-    voting_clf = VotingClassifier(
-        estimators=estimators,
-        voting='hard'
+    search = RandomizedSearchCV(
+        pipeline,
+        param_grid,
+        n_iter=n_iter,
+        scoring=scoring,
+        cv=cv,
+        n_jobs=-1,
+        random_state=random_state
     )
     
-    voting_clf.fit(X_train, y_train)
-    return voting_clf
-
-
-def save_model(model, filepath):
-    """
-    Save a trained model to disk
-    
-    Args:
-        model: Trained model
-        filepath (str): Path to save the model
-    """
-    joblib.dump(model, filepath)
-    print(f"Model saved to {filepath}")
-
-
-def load_model(filepath):
-    """
-    Load a trained model from disk
-    
-    Args:
-        filepath (str): Path to the saved model
-        
-    Returns:
-        Loaded model
-    """
-    model = joblib.load(filepath)
-    print(f"Model loaded from {filepath}")
-    return model
+    search.fit(X_train, y_train)
+    return search

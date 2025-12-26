@@ -1,0 +1,18 @@
+{
+    "model_name": "SVM",
+    "model_type": "traditional_ml",
+    "timestamp": "20251226_124354",
+    "performance": {
+        "accuracy": 0.5782,
+        "f1_macro": 0.5403,
+        "precision_macro": 0.5913,
+        "recall_macro": 0.5251,
+        "best_cv_score": 0.4764
+    },
+    "hyperparameters": {
+        "clf__C": 0.1
+    },
+    "files": {
+        "model": "C:\\Users\\seakl\\Documents\\I5-AMS\\WR\\PROJECT\\models\\saved_models\\best_model_svm_20251226_124354.pkl"
+    }
+}
