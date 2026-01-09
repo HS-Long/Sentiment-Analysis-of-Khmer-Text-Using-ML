@@ -160,13 +160,13 @@ def main():
         # Select threshold method
         if args.threshold_method == 'f1':
             thresholds = thresholds_data.get('f1_method', {})
-            print(f"✓ Using F1-optimized thresholds")
+            print(f"Using F1-optimized thresholds")
         elif args.threshold_method == 'youden':
             thresholds = thresholds_data.get('youden_method', {})
-            print(f"✓ Using Youden-optimized thresholds")
+            print(f"Using Youden-optimized thresholds")
         else:
             thresholds = thresholds_data.get('default', {})
-            print(f"✓ Using default thresholds (0.5)")
+            print(f"Using default thresholds (0.5)")
         
         print("\nThresholds:")
         for cls, thresh in thresholds.items():

@@ -20,4 +20,4 @@ for col in df.columns:
 
 df.to_csv("data_cleaned_all.csv", index=False, encoding="utf-8")
 
-print("✅ All Khmer inter-word spaces removed dynamically")
+print("All Khmer inter-word spaces removed dynamically")

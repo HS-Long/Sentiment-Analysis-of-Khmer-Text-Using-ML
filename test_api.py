@@ -117,12 +117,12 @@ if __name__ == "__main__":
         test_batch_prediction()
         
         print("\n" + "="*60)
-        print("✅ All tests completed!")
+        print("All tests completed!")
         print("="*60 + "\n")
         
     except requests.exceptions.ConnectionError:
-        print("\n❌ Error: Could not connect to the API.")
+        print("\nError: Could not connect to the API.")
         print("   Make sure the Flask server is running:")
         print("   python app.py")
     except Exception as e:
-        print(f"\n❌ Error: {str(e)}")
+        print(f"\nError: {str(e)}")

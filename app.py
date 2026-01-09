@@ -100,14 +100,14 @@ def load_best_model():
                 'loaded_at': datetime.now().isoformat()
             }
         
-        print("✅ Model loaded successfully!")
+        print("Model loaded successfully!")
         print(f"   Model: {MODEL_INFO.get('model_name', 'Unknown')}")
         print(f"   Classes: {LABEL_ENCODER.classes_.tolist() if LABEL_ENCODER else 'Unknown'}")
         
         return True
     
     except Exception as e:
-        print(f"❌ Error loading model: {str(e)}")
+        print(f"Error loading model: {str(e)}")
         import traceback
         traceback.print_exc()
         return False

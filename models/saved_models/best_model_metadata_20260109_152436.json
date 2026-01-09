@@ -1,0 +1,23 @@
+{
+    "model_name": "Bidirectional LSTM",
+    "model_type": "deep_learning",
+    "timestamp": "20260109_152436",
+    "performance": {
+        "accuracy": 0.8565891472868217,
+        "f1_macro": 0.8584020252539286,
+        "precision_macro": 0.8896775592773315,
+        "recall_macro": 0.8456692723412469,
+        "best_cv_score": 0.8591731190681458
+    },
+    "hyperparameters": {
+        "max_words": 5000,
+        "max_len": 100,
+        "embedding_dim": 128,
+        "lstm_units": 64
+    },
+    "files": {
+        "model": "C:\\Users\\seakl\\Documents\\I5-AMS\\WR\\PROJECT\\models\\saved_models\\best_model_lstm_20260109_152436.keras",
+        "tokenizer": "C:\\Users\\seakl\\Documents\\I5-AMS\\WR\\PROJECT\\models\\saved_models\\tokenizer_lstm_20260109_152436.pkl",
+        "label_encoder": "C:\\Users\\seakl\\Documents\\I5-AMS\\WR\\PROJECT\\models\\saved_models\\label_encoder_lstm_20260109_152436.pkl"
+    }
+}

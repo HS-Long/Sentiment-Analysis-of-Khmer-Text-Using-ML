@@ -293,7 +293,7 @@ def plot_roc_curves_multiclass(
     
     if save_path:
         plt.savefig(save_path, dpi=300, bbox_inches='tight')
-        print(f"✓ ROC curves saved: {save_path}")
+        print(f"ROC curves saved: {save_path}")
     
     plt.show()
 
@@ -371,7 +371,7 @@ def plot_threshold_analysis(
     
     if save_path:
         plt.savefig(save_path, dpi=300, bbox_inches='tight')
-        print(f"✓ Threshold analysis saved: {save_path}")
+        print(f"Threshold analysis saved: {save_path}")
     
     plt.show()
     

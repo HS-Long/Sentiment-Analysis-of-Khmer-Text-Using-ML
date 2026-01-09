@@ -63,14 +63,14 @@ def main(data_path: str = None, train_lstm: bool = True):
         data_path = CLEANED_DATA_PATH
     
     df = load_data(data_path)
-    print(f"✓ Loaded data: {df.shape}")
+    print(f"Loaded data: {df.shape}")
     
     df = clean_data(df, TEXT_COLUMN)
-    print(f"✓ Cleaned data: {df.shape}")
+    print(f"Cleaned data: {df.shape}")
     
     # Apply Khmer preprocessing
     df[CLEAN_TEXT_COLUMN] = df[TEXT_COLUMN].apply(lambda x: preprocess_khmer(x, KHMER_SLANG))
-    print(f"✓ Applied Khmer preprocessing")
+    print(f"Applied Khmer preprocessing")
     
     # Check class distribution
     print(f"\nClass Distribution:")
@@ -90,8 +90,8 @@ def main(data_path: str = None, train_lstm: bool = True):
         stratify=STRATIFY_SPLIT
     )
     
-    print(f"✓ Training set: {len(X_train)} samples")
-    print(f"✓ Test set: {len(X_test)} samples")
+    print(f"Training set: {len(X_train)} samples")
+    print(f"Test set: {len(X_test)} samples")
     
     # ========== 3. FEATURE EXTRACTION ==========
     print("\n" + "="*80)
@@ -105,7 +105,7 @@ def main(data_path: str = None, train_lstm: bool = True):
     )
     
     class_weight = compute_class_weights(y_train)
-    print(f"✓ Class weights: {class_weight}")
+    print(f"Class weights: {class_weight}")
     
     # ========== 4. TRAIN TRADITIONAL ML MODELS ==========
     print("\n" + "="*80)
@@ -120,28 +120,28 @@ def main(data_path: str = None, train_lstm: bool = True):
     pipe_lr = create_logistic_regression_pipeline(tfidf, class_weight)
     rs_lr = train_model_with_search(pipe_lr, param_grids['lr'], X_train, y_train)
     trained_models["Logistic Regression"] = rs_lr
-    print(f"✓ Best F1-Macro: {rs_lr.best_score_:.4f}")
+    print(f"Best F1-Macro: {rs_lr.best_score_:.4f}")
     
     # SVM
     print("\n[2/5] Training SVM...")
     pipe_svm = create_svm_pipeline(tfidf, class_weight)
     rs_svm = train_model_with_search(pipe_svm, param_grids['svm'], X_train, y_train)
     trained_models["SVM"] = rs_svm
-    print(f"✓ Best F1-Macro: {rs_svm.best_score_:.4f}")
+    print(f"Best F1-Macro: {rs_svm.best_score_:.4f}")
     
     # Naive Bayes
     print("\n[3/5] Training Naive Bayes...")
     pipe_nb = create_naive_bayes_pipeline(tfidf)
     rs_nb = train_model_with_search(pipe_nb, param_grids['nb'], X_train, y_train)
     trained_models["Naive Bayes"] = rs_nb
-    print(f"✓ Best F1-Macro: {rs_nb.best_score_:.4f}")
+    print(f"Best F1-Macro: {rs_nb.best_score_:.4f}")
     
     # Random Forest
     print("\n[4/5] Training Random Forest...")
     pipe_rf = create_random_forest_pipeline(tfidf, class_weight)
     rs_rf = train_model_with_search(pipe_rf, param_grids['rf'], X_train, y_train)
     trained_models["Random Forest"] = rs_rf
-    print(f"✓ Best F1-Macro: {rs_rf.best_score_:.4f}")
+    print(f"Best F1-Macro: {rs_rf.best_score_:.4f}")
     
     # XGBoost (optional)
     print("\n[5/5] Training XGBoost...")
@@ -153,7 +153,7 @@ def main(data_path: str = None, train_lstm: bool = True):
         
         rs_xgb = train_model_with_search(pipe_xgb, param_grids['xgb'], X_train, y_train_encoded)
         trained_models["XGBoost"] = rs_xgb
-        print(f"✓ Best F1-Macro: {rs_xgb.best_score_:.4f}")
+        print(f"Best F1-Macro: {rs_xgb.best_score_:.4f}")
     else:
         le = None
     
@@ -185,7 +185,7 @@ def main(data_path: str = None, train_lstm: bool = True):
                     batch_size=LSTM_BATCH_SIZE,
                     patience=LSTM_PATIENCE
                 )
-                print("✓ BiLSTM trained successfully")
+                print("BiLSTM trained successfully")
             else:
                 model_lstm = None
                 tokenizer = None
@@ -234,7 +234,7 @@ def main(data_path: str = None, train_lstm: bool = True):
     best_model_idx = comparison_df['F1-Macro'].idxmax()
     best_model_name = comparison_df.loc[best_model_idx, 'Model']
     
-    print(f"🏆 Best Model: {best_model_name}")
+    print(f"Best Model: {best_model_name}")
     print(f"   F1-Macro: {comparison_df.loc[best_model_idx, 'F1-Macro']:.4f}")
     
     # Prepare performance metrics
@@ -299,7 +299,7 @@ def main(data_path: str = None, train_lstm: bool = True):
         if hasattr(best_model_obj, 'predict_proba'):
             y_pred_proba = best_model_obj.predict_proba(X_test)
         else:
-            print("⚠ XGBoost model doesn't support probability predictions for ROC analysis")
+            print("Warning: XGBoost model doesn't support probability predictions for ROC analysis")
             y_pred_proba = None
         classes_used = le.classes_ if le else CLASS_LABELS
     else:
@@ -309,12 +309,12 @@ def main(data_path: str = None, train_lstm: bool = True):
             classes_used = best_model_obj.classes_
         else:
             # SVM might use decision_function
-            print("⚠ Model doesn't support probability predictions. Skipping ROC analysis.")
+            print("Warning: Model doesn't support probability predictions. Skipping ROC analysis.")
             y_pred_proba = None
             classes_used = CLASS_LABELS
     
     if y_pred_proba is not None:
-        print("\n📊 Computing ROC curves for all classes...")
+        print("\nComputing ROC curves for all classes...")
         
         # Compute ROC curves
         roc_data = compute_roc_curves_multiclass(y_test, y_pred_proba, list(classes_used))
@@ -329,7 +329,7 @@ def main(data_path: str = None, train_lstm: bool = True):
         plot_roc_curves_multiclass(roc_data, save_path=roc_plot_path)
         
         # Find optimal thresholds using multiple methods
-        print("\n🎯 Finding optimal thresholds...")
+        print("\nFinding optimal thresholds...")
         
         optimal_thresholds_youden = get_optimal_thresholds_multiclass(
             y_test, y_pred_proba, list(classes_used), method='youden'
@@ -352,7 +352,7 @@ def main(data_path: str = None, train_lstm: bool = True):
             print(f"  {cls:>10s}: {threshold:.4f}")
         
         # Generate comprehensive threshold report
-        print("\n📋 Generating threshold optimization report...")
+        print("\nGenerating threshold optimization report...")
         threshold_report = generate_threshold_report(
             y_test, y_pred_proba, list(classes_used), methods=['youden', 'f1']
         )
@@ -365,10 +365,10 @@ def main(data_path: str = None, train_lstm: bool = True):
         # Save threshold report
         threshold_report_path = os.path.join(REPORTS_DIR, f'threshold_report_{timestamp}.csv')
         threshold_report.to_csv(threshold_report_path, index=False, encoding='utf-8-sig')
-        print(f"\n✓ Threshold report saved: {threshold_report_path}")
+        print(f"\nThreshold report saved: {threshold_report_path}")
         
         # Plot threshold analysis for each class
-        print("\n📈 Generating threshold analysis plots...")
+        print("\nGenerating threshold analysis plots...")
         from sklearn.preprocessing import label_binarize
         y_test_bin = label_binarize(y_test, classes=list(classes_used))
         
@@ -384,7 +384,7 @@ def main(data_path: str = None, train_lstm: bool = True):
                 cls,
                 save_path=threshold_plot_path
             )
-            print(f"  ✓ {cls}: Optimal threshold = {opt_thresh:.4f}, Best F1 = {best_f1:.4f}")
+            print(f"  {cls}: Optimal threshold = {opt_thresh:.4f}, Best F1 = {best_f1:.4f}")
         
         # Save optimal thresholds to JSON
         import json
@@ -400,10 +400,10 @@ def main(data_path: str = None, train_lstm: bool = True):
         thresholds_json_path = os.path.join(MODELS_DIR, f'optimal_thresholds_{timestamp}.json')
         with open(thresholds_json_path, 'w', encoding='utf-8') as f:
             json.dump(thresholds_data, f, indent=4, ensure_ascii=False)
-        print(f"\n✓ Optimal thresholds saved: {thresholds_json_path}")
+        print(f"\nOptimal thresholds saved: {thresholds_json_path}")
     
     print("\n" + "="*80)
-    print("✓ TRAINING PIPELINE COMPLETED SUCCESSFULLY!")
+    print("TRAINING PIPELINE COMPLETED SUCCESSFULLY")
     print("="*80)
 
 

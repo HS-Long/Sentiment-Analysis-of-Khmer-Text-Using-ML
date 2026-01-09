@@ -48,21 +48,21 @@ def save_model(
         model_path = os.path.join(save_dir, f'best_model_lstm_{timestamp}.keras')
         model.save(model_path)
         saved_files['model'] = model_path
-        print(f"✓ LSTM model saved: {model_path}")
+        print(f"LSTM model saved: {model_path}")
         
         # Save tokenizer
         if tokenizer is not None:
             tokenizer_path = os.path.join(save_dir, f'tokenizer_lstm_{timestamp}.pkl')
             joblib.dump(tokenizer, tokenizer_path)
             saved_files['tokenizer'] = tokenizer_path
-            print(f"✓ Tokenizer saved: {tokenizer_path}")
+            print(f"Tokenizer saved: {tokenizer_path}")
         
         # Save label encoder
         if label_encoder is not None:
             le_path = os.path.join(save_dir, f'label_encoder_lstm_{timestamp}.pkl')
             joblib.dump(label_encoder, le_path)
             saved_files['label_encoder'] = le_path
-            print(f"✓ Label Encoder saved: {le_path}")
+            print(f"Label Encoder saved: {le_path}")
     
     else:
         # Save traditional ML model
@@ -70,14 +70,14 @@ def save_model(
         model_path = os.path.join(save_dir, f'best_model_{safe_name}_{timestamp}.pkl')
         joblib.dump(model, model_path)
         saved_files['model'] = model_path
-        print(f"✓ Model saved: {model_path}")
+        print(f"Model saved: {model_path}")
         
         # Save label encoder if provided
         if label_encoder is not None:
             le_path = os.path.join(save_dir, f'label_encoder_{safe_name}_{timestamp}.pkl')
             joblib.dump(label_encoder, le_path)
             saved_files['label_encoder'] = le_path
-            print(f"✓ Label Encoder saved: {le_path}")
+            print(f"Label Encoder saved: {le_path}")
     
     # Save metadata
     metadata = {
@@ -93,7 +93,7 @@ def save_model(
     with open(metadata_path, 'w', encoding='utf-8') as f:
         json.dump(metadata, f, indent=4, ensure_ascii=False)
     
-    print(f"✓ Metadata saved: {metadata_path}")
+    print(f"Metadata saved: {metadata_path}")
     
     return saved_files
 

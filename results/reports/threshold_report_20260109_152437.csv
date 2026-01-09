@@ -1,0 +1,4 @@
+﻿Class,AUC,Threshold_Youden,Youden_J,Threshold_F1,Best_F1,Default_Threshold
+negative,0.9715,0.5021,0.8265,0.4242,0.8959,0.5
+neutral,0.9617,0.3263,0.7595,0.7172,0.8602,0.5
+positive,0.9664,0.1438,0.7909,0.6869,0.8409,0.5

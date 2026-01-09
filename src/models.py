@@ -29,6 +29,7 @@ def create_logistic_regression_pipeline(tfidf, class_weight: Dict) -> Pipeline:
         ("tfidf", tfidf),
         ("clf", LogisticRegression(
             class_weight=class_weight,
+            random_state=42,
             max_iter=2000
         ))
     ])
@@ -48,7 +49,10 @@ def create_svm_pipeline(tfidf, class_weight: Dict) -> Pipeline:
     """
     pipeline = Pipeline([
         ("tfidf", tfidf),
-        ("clf", LinearSVC(class_weight=class_weight))
+        ("clf", LinearSVC(
+            class_weight=class_weight,
+            random_state=42
+        ))
     ])
     return pipeline
 
@@ -116,36 +120,44 @@ def create_xgboost_pipeline(tfidf) -> Optional[Pipeline]:
         ])
         return pipeline
     except ImportError:
-        print("⚠ XGBoost not installed. Skipping XGBoost model.")
+        print("Warning: XGBoost not installed. Skipping XGBoost model.")
         return None
 
 
 def get_hyperparameter_grids() -> Dict[str, Dict[str, Any]]:
     """
     Get hyperparameter search grids for all models.
+    Based on Model.ipynb notebook experimentation.
     
     Returns:
         Dictionary mapping model names to their hyperparameter grids
     """
     grids = {
         "lr": {
-            "clf__C": [0.01, 0.1, 1, 5, 10],
-            "clf__solver": ["lbfgs", "saga"]
+            "clf__penalty": ["l1", "l2", "elasticnet"],
+            "clf__C": [0.001, 0.01, 0.1, 1, 10, 100],
+            "clf__solver": ["lbfgs", "liblinear", "saga"],
+            "clf__max_iter": [100, 200, 500, 1000, 2000],
+            "clf__l1_ratio": [0.0, 0.25, 0.5, 0.75, 1.0]  # Only used when penalty='elasticnet'
         },
         "svm": {
-            "clf__C": [0.01, 0.1, 1, 5, 10]
+            "clf__C": [0.001, 0.01, 0.1, 1, 10, 100],
+            "clf__penalty": ["l1", "l2"],
+            "clf__loss": ["hinge", "squared_hinge"],
+            "clf__dual": [True, False],
+            "clf__max_iter": [1000, 2000, 3000]
         },
         "nb": {
-            "clf__alpha": [0.1, 0.5, 1.0, 2.0]
+            "clf__alpha": [0.01, 0.1, 0.5, 1.0]
         },
         "rf": {
-            "clf__n_estimators": [100, 200, 300],
-            "clf__max_depth": [10, 20, 30, None],
-            "clf__min_samples_split": [2, 5]
+            "clf__n_estimators": [100, 200, 300, 500, 700],
+            "clf__max_depth": [10, 20, 30, 50],
+            "clf__min_samples_split": [2, 5, 8, 10]
         },
         "xgb": {
-            "clf__n_estimators": [100, 200, 300],
-            "clf__max_depth": [3, 5, 7],
+            "clf__n_estimators": [100, 200, 300, 500, 700],
+            "clf__max_depth": [3, 5, 7, 10, 15, 30],
             "clf__learning_rate": [0.01, 0.1, 0.3]
         }
     }
