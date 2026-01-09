@@ -8,6 +8,7 @@ for the Khmer sentiment analysis project.
 import pandas as pd
 from typing import Tuple
 from sklearn.model_selection import train_test_split
+from src.preprocessing import LABEL_MAP
 
 
 def load_data(file_path: str, encoding: str = 'utf-8') -> pd.DataFrame:
@@ -44,6 +45,33 @@ def clean_data(df: pd.DataFrame, text_column: str = 'text') -> pd.DataFrame:
     
     # Reset index
     df = df.reset_index(drop=True)
+    
+    return df
+
+
+def convert_labels_to_numeric(df: pd.DataFrame, target_column: str = 'target') -> pd.DataFrame:
+    """
+    Convert string sentiment labels to numeric format.
+    
+    Label mapping:
+        - 0: negative
+        - 1: neutral
+        - 2: positive
+    
+    Args:
+        df: Input DataFrame
+        target_column: Name of the target column
+        
+    Returns:
+        DataFrame with numeric labels
+    """
+    df = df.copy()
+    df[target_column] = df[target_column].map(LABEL_MAP)
+    
+    # Check for unmapped values
+    if df[target_column].isnull().any():
+        unmapped = df[df[target_column].isnull()][target_column].unique()
+        raise ValueError(f"Found unmapped label values: {unmapped}")
     
     return df
 

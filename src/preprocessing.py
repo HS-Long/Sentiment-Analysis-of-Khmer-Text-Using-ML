@@ -19,6 +19,20 @@ KHMER_SLANG = {
     # Add more Khmer slang mappings as you discover them
 }
 
+# Sentiment label mapping: string to numeric
+LABEL_MAP = {
+    'negative': 0,
+    'neutral': 1,
+    'positive': 2
+}
+
+# Reverse mapping: numeric to string
+LABEL_MAP_REVERSE = {
+    0: 'negative',
+    1: 'neutral',
+    2: 'positive'
+}
+
 
 def preprocess_khmer(text: str, slang_dict: Optional[Dict[str, str]] = None) -> str:
     """

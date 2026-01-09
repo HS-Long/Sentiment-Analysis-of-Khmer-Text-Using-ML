@@ -48,15 +48,14 @@ def evaluate_model(y_true, y_pred, target_names: List[str] = None) -> Dict:
     return metrics
 
 
-def compare_models(models: Dict, X_test, y_test, le=None) -> pd.DataFrame:
+def compare_models(models: Dict, X_test, y_test) -> pd.DataFrame:
     """
     Compare performance of multiple models.
     
     Args:
         models: Dictionary of trained models
         X_test: Test features
-        y_test: Test labels
-        le: Label encoder (for XGBoost)
+        y_test: Test labels (numeric: 0, 1, 2)
         
     Returns:
         DataFrame with comparison results
@@ -64,20 +63,14 @@ def compare_models(models: Dict, X_test, y_test, le=None) -> pd.DataFrame:
     comparison_results = []
     
     for name, model in models.items():
-        if name == "XGBoost" and le is not None:
-            y_pred = model.predict(X_test)
-            y_pred_labels = le.inverse_transform(y_pred)
-            y_test_labels = y_test
-        else:
-            y_pred_labels = model.predict(X_test)
-            y_test_labels = y_test
+        y_pred = model.predict(X_test)
         
         result = {
             'Model': name,
-            'Accuracy': accuracy_score(y_test_labels, y_pred_labels),
-            'F1-Macro': f1_score(y_test_labels, y_pred_labels, average='macro'),
-            'Precision-Macro': precision_score(y_test_labels, y_pred_labels, average='macro'),
-            'Recall-Macro': recall_score(y_test_labels, y_pred_labels, average='macro'),
+            'Accuracy': accuracy_score(y_test, y_pred),
+            'F1-Macro': f1_score(y_test, y_pred, average='macro'),
+            'Precision-Macro': precision_score(y_test, y_pred, average='macro'),
+            'Recall-Macro': recall_score(y_test, y_pred, average='macro'),
             'Best CV Score': model.best_score_ if hasattr(model, 'best_score_') else 0
         }
         comparison_results.append(result)

@@ -1,0 +1,21 @@
+{
+    "model_name": "XGBoost",
+    "model_type": "traditional_ml",
+    "timestamp": "20260109_213625",
+    "performance": {
+        "accuracy": 0.8217,
+        "f1_macro": 0.8208,
+        "precision_macro": 0.8408,
+        "recall_macro": 0.8113,
+        "best_cv_score": 0.7443
+    },
+    "hyperparameters": {
+        "clf__n_estimators": 700,
+        "clf__max_depth": 7,
+        "clf__learning_rate": 0.1
+    },
+    "files": {
+        "model": "models/saved_models/best_model_xgboost_20260109_213625.pkl",
+        "label_encoder": "models/saved_models/label_encoder_xgb_20260109_213625.pkl"
+    }
+}

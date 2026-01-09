@@ -19,8 +19,8 @@ from sklearn.preprocessing import LabelEncoder
 
 # Import custom modules
 from src.config import *
-from src.data_loader import load_data, clean_data, prepare_train_test_split, get_class_distribution
-from src.preprocessing import preprocess_khmer, KHMER_SLANG
+from src.data_loader import load_data, clean_data, prepare_train_test_split, get_class_distribution, convert_labels_to_numeric
+from src.preprocessing import preprocess_khmer, KHMER_SLANG, LABEL_MAP_REVERSE
 from src.feature_extraction import create_tfidf_vectorizer, compute_class_weights
 from src.models import (
     create_logistic_regression_pipeline,
@@ -67,6 +67,10 @@ def main(data_path: str = None, train_lstm: bool = True):
     
     df = clean_data(df, TEXT_COLUMN)
     print(f"Cleaned data: {df.shape}")
+    
+    # Convert labels to numeric (0: negative, 1: neutral, 2: positive)
+    df = convert_labels_to_numeric(df, TARGET_COLUMN)
+    print(f"Converted labels to numeric: 0=negative, 1=neutral, 2=positive")
     
     # Apply Khmer preprocessing
     df[CLEAN_TEXT_COLUMN] = df[TEXT_COLUMN].apply(lambda x: preprocess_khmer(x, KHMER_SLANG))
@@ -147,15 +151,10 @@ def main(data_path: str = None, train_lstm: bool = True):
     print("\n[5/5] Training XGBoost...")
     pipe_xgb = create_xgboost_pipeline(tfidf)
     if pipe_xgb is not None:
-        le = LabelEncoder()
-        y_train_encoded = le.fit_transform(y_train)
-        y_test_encoded = le.transform(y_test)
-        
-        rs_xgb = train_model_with_search(pipe_xgb, param_grids['xgb'], X_train, y_train_encoded)
+        # Labels are already numeric (0, 1, 2), no need for LabelEncoder
+        rs_xgb = train_model_with_search(pipe_xgb, param_grids['xgb'], X_train, y_train)
         trained_models["XGBoost"] = rs_xgb
         print(f"Best F1-Macro: {rs_xgb.best_score_:.4f}")
-    else:
-        le = None
     
     # ========== 5. TRAIN DEEP LEARNING MODEL (OPTIONAL) ==========
     if train_lstm:
@@ -168,10 +167,9 @@ def main(data_path: str = None, train_lstm: bool = True):
         X_test_pad, _ = prepare_sequences(X_test, MAX_WORDS, MAX_LEN, tokenizer)
         
         if X_train_pad is not None:
-            # Encode labels
-            le_lstm = LabelEncoder()
-            y_train_lstm = le_lstm.fit_transform(y_train)
-            y_test_lstm = le_lstm.transform(y_test)
+            # Labels are already numeric (0, 1, 2), no need for LabelEncoder
+            y_train_lstm = y_train.values
+            y_test_lstm = y_test.values
             
             # Create and train model
             model_lstm = create_lstm_model(MAX_WORDS, MAX_LEN, EMBEDDING_DIM, LSTM_UNITS, NUM_CLASSES)
@@ -189,11 +187,9 @@ def main(data_path: str = None, train_lstm: bool = True):
             else:
                 model_lstm = None
                 tokenizer = None
-                le_lstm = None
         else:
             model_lstm = None
             tokenizer = None
-            le_lstm = None
     else:
         model_lstm = None
         tokenizer = None
@@ -204,21 +200,20 @@ def main(data_path: str = None, train_lstm: bool = True):
     print("STEP 6: MODEL COMPARISON")
     print("="*80)
     
-    comparison_df = compare_models(trained_models, X_test, y_test, le if 'XGBoost' in trained_models else None)
+    comparison_df = compare_models(trained_models, X_test, y_test)
     
     # Add LSTM results if available
     if model_lstm is not None:
         y_pred_lstm = model_lstm.predict(X_test_pad, verbose=0)
         y_pred_lstm_classes = y_pred_lstm.argmax(axis=1)
-        y_pred_lstm_labels = le_lstm.inverse_transform(y_pred_lstm_classes)
         
         from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
         lstm_result = {
             'Model': 'Bidirectional LSTM',
-            'Accuracy': accuracy_score(y_test, y_pred_lstm_labels),
-            'F1-Macro': f1_score(y_test, y_pred_lstm_labels, average='macro'),
-            'Precision-Macro': precision_score(y_test, y_pred_lstm_labels, average='macro'),
-            'Recall-Macro': recall_score(y_test, y_pred_lstm_labels, average='macro'),
+            'Accuracy': accuracy_score(y_test, y_pred_lstm_classes),
+            'F1-Macro': f1_score(y_test, y_pred_lstm_classes, average='macro'),
+            'Precision-Macro': precision_score(y_test, y_pred_lstm_classes, average='macro'),
+            'Recall-Macro': recall_score(y_test, y_pred_lstm_classes, average='macro'),
             'Best CV Score': max(history.history['val_accuracy']) if history else 0
         }
         comparison_df = pd.concat([comparison_df, pd.DataFrame([lstm_result])], ignore_index=True)
@@ -261,14 +256,11 @@ def main(data_path: str = None, train_lstm: bool = True):
             performance,
             hyperparameters,
             MODELS_DIR,
-            tokenizer=tokenizer,
-            label_encoder=le_lstm
+            tokenizer=tokenizer
         )
     else:
         best_model_obj = trained_models[best_model_name]
         hyperparameters = best_model_obj.best_params_
-        
-        label_enc = le if best_model_name == "XGBoost" else None
         
         save_model(
             best_model_obj,
@@ -276,8 +268,7 @@ def main(data_path: str = None, train_lstm: bool = True):
             'traditional_ml',
             performance,
             hyperparameters,
-            MODELS_DIR,
-            label_encoder=label_enc
+            MODELS_DIR
         )
     
     # Save comparison report
@@ -288,10 +279,12 @@ def main(data_path: str = None, train_lstm: bool = True):
     print("STEP 8: ROC ANALYSIS & OPTIMAL THRESHOLD FINDING")
     print("="*80)
     
+    # Classes are numeric: [0, 1, 2]
+    classes_used = [0, 1, 2]
+    
     # Get probability predictions from best model
     if best_model_name == "Bidirectional LSTM" and model_lstm is not None:
         y_pred_proba = model_lstm.predict(X_test_pad, verbose=0)
-        classes_used = le_lstm.classes_
     elif best_model_name == "XGBoost" and 'XGBoost' in trained_models:
         # XGBoost returns class predictions, need to get probabilities
         best_model_obj = trained_models[best_model_name]
@@ -301,7 +294,6 @@ def main(data_path: str = None, train_lstm: bool = True):
         else:
             print("Warning: XGBoost model doesn't support probability predictions for ROC analysis")
             y_pred_proba = None
-        classes_used = le.classes_ if le else CLASS_LABELS
     else:
         best_model_obj = trained_models[best_model_name]
         if hasattr(best_model_obj, 'predict_proba'):

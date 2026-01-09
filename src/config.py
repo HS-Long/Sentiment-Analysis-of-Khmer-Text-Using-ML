@@ -48,8 +48,10 @@ LSTM_EPOCHS = 20
 LSTM_BATCH_SIZE = 32
 LSTM_PATIENCE = 3
 
-# Class labels
-CLASS_LABELS = ["neg", "neu", "pos"]
+# Class labels (numeric representation)
+# 0: negative, 1: neutral, 2: positive
+CLASS_LABELS = [0, 1, 2]
+CLASS_NAMES = ["negative", "neutral", "positive"]
 NUM_CLASSES = len(CLASS_LABELS)
 
 # Khmer slang dictionary

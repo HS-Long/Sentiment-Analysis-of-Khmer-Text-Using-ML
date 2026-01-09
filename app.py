@@ -11,7 +11,7 @@ from datetime import datetime
 import numpy as np
 
 # Import custom modules
-from src.preprocessing import preprocess_khmer
+from src.preprocessing import preprocess_khmer, LABEL_MAP_REVERSE
 from src.model_persistence import load_model, load_preprocessing_objects
 
 app = Flask(__name__)
@@ -19,12 +19,11 @@ app = Flask(__name__)
 # Global variables to store loaded model and objects
 MODEL = None
 TFIDF = None
-LABEL_ENCODER = None
 MODEL_INFO = {}
 
 def load_best_model():
     """Load the most recent best model and preprocessing objects."""
-    global MODEL, TFIDF, LABEL_ENCODER, MODEL_INFO
+    global MODEL, TFIDF, MODEL_INFO
     
     try:
         # Find the most recent model file
@@ -53,41 +52,9 @@ def load_best_model():
         else:
             # Fallback: try to load from separate file
             try:
-                TFIDF, LABEL_ENCODER = load_preprocessing_objects(latest_model)
+                TFIDF, _ = load_preprocessing_objects(latest_model)
             except:
                 raise ValueError("Could not extract TF-IDF vectorizer from model")
-        
-        # Load label encoder - try multiple methods
-        from sklearn.preprocessing import LabelEncoder
-        import joblib
-        
-        # Method 1: Load from separate file
-        le_path = latest_model.replace('best_model_', 'label_encoder_')
-        if os.path.exists(le_path):
-            LABEL_ENCODER = joblib.load(le_path)
-            print("   ✓ Label encoder loaded from file")
-        else:
-            # Method 2: Get from metadata
-            metadata_file = latest_model.replace('.pkl', '_metadata.json')
-            if os.path.exists(metadata_file):
-                with open(metadata_file, 'r', encoding='utf-8') as f:
-                    metadata = json.load(f)
-                    if 'classes' in metadata:
-                        LABEL_ENCODER = LabelEncoder()
-                        LABEL_ENCODER.classes_ = np.array(metadata['classes'])
-                        print("   ✓ Label encoder created from metadata")
-            
-            # Method 3: Try to get from pipeline's classes_ attribute
-            if LABEL_ENCODER is None and hasattr(pipeline, 'classes_'):
-                LABEL_ENCODER = LabelEncoder()
-                LABEL_ENCODER.classes_ = pipeline.classes_
-                print("   ✓ Label encoder created from model classes")
-            
-            # Method 4: Default classes for sentiment analysis
-            if LABEL_ENCODER is None:
-                LABEL_ENCODER = LabelEncoder()
-                LABEL_ENCODER.classes_ = np.array(['negative', 'neutral', 'positive'])
-                print("   ⚠ Using default label encoder (negative, neutral, positive)")
         
         # Load metadata
         metadata_file = latest_model.replace('.pkl', '_metadata.json')
@@ -100,9 +67,12 @@ def load_best_model():
                 'loaded_at': datetime.now().isoformat()
             }
         
+        # Classes are numeric: [0, 1, 2] representing negative, neutral, positive
+        class_names = ['negative', 'neutral', 'positive']
+        
         print("Model loaded successfully!")
         print(f"   Model: {MODEL_INFO.get('model_name', 'Unknown')}")
-        print(f"   Classes: {LABEL_ENCODER.classes_.tolist() if LABEL_ENCODER else 'Unknown'}")
+        print(f"   Classes: {class_names} (0, 1, 2)")
         
         return True
     
@@ -137,18 +107,9 @@ def predict_sentiment(text, return_proba=False):
         # So we just pass the processed text directly to predict
         prediction_raw = MODEL.predict([processed_text])[0]
         
-        # Handle prediction - it might be a string or an index
-        if isinstance(prediction_raw, str):
-            sentiment = prediction_raw
-            prediction_id = list(LABEL_ENCODER.classes_).index(sentiment)
-        else:
-            # It's a numeric prediction
-            prediction_id = int(prediction_raw)
-            # Map to sentiment label
-            if prediction_id < len(LABEL_ENCODER.classes_):
-                sentiment = LABEL_ENCODER.classes_[prediction_id]
-            else:
-                sentiment = LABEL_ENCODER.classes_[0]  # Fallback
+        # prediction_raw is numeric (0, 1, 2)
+        prediction_id = int(prediction_raw)
+        sentiment = LABEL_MAP_REVERSE.get(prediction_id, 'unknown')
         
         result = {
             'text': text,
@@ -161,8 +122,9 @@ def predict_sentiment(text, return_proba=False):
         if return_proba and hasattr(MODEL, 'predict_proba'):
             probabilities = MODEL.predict_proba([processed_text])[0]
             result['probabilities'] = {
-                class_name: float(prob)
-                for class_name, prob in zip(LABEL_ENCODER.classes_, probabilities)
+                'negative': float(probabilities[0]),
+                'neutral': float(probabilities[1]),
+                'positive': float(probabilities[2])
             }
             result['confidence'] = float(max(probabilities))
         

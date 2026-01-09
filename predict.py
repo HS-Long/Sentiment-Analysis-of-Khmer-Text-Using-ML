@@ -14,13 +14,13 @@ import argparse
 import pandas as pd
 import json
 import numpy as np
-from src.preprocessing import preprocess_khmer, KHMER_SLANG
+from src.preprocessing import preprocess_khmer, KHMER_SLANG, LABEL_MAP_REVERSE
 from src.model_persistence import load_model, load_preprocessing_objects
 from src.threshold_optimization import predict_with_threshold
 
 
 def predict_single_text(text: str, model, model_type: str = 'traditional_ml', 
-                        tokenizer=None, label_encoder=None, max_len=100,
+                        tokenizer=None, max_len=100,
                         thresholds=None, use_proba=False):
     """
     Predict sentiment for a single text.
@@ -30,13 +30,13 @@ def predict_single_text(text: str, model, model_type: str = 'traditional_ml',
         model: Loaded model
         model_type: Type of model ('traditional_ml' or 'deep_learning')
         tokenizer: Tokenizer for LSTM (if model_type='deep_learning')
-        label_encoder: Label encoder
         max_len: Maximum sequence length (for LSTM)
         thresholds: Dictionary of custom thresholds for each class
         use_proba: Return probabilities instead of class label
         
     Returns:
-        Predicted sentiment label (or probabilities if use_proba=True)
+        Predicted sentiment (numeric: 0, 1, 2) or string ('negative', 'neutral', 'positive')
+        or probabilities if use_proba=True
     """
     # Preprocess text
     cleaned_text = preprocess_khmer(text, KHMER_SLANG)
@@ -54,15 +54,14 @@ def predict_single_text(text: str, model, model_type: str = 'traditional_ml',
             return prediction_proba[0]
         
         # Apply custom thresholds if provided
-        if thresholds is not None and label_encoder is not None:
-            classes = label_encoder.classes_
+        if thresholds is not None:
+            classes = [0, 1, 2]
             predicted_labels = predict_with_threshold(
-                prediction_proba, thresholds, list(classes)
+                prediction_proba, thresholds, classes
             )
             predicted_label = predicted_labels[0]
         else:
-            predicted_class = prediction_proba.argmax(axis=1)[0]
-            predicted_label = label_encoder.inverse_transform([predicted_class])[0]
+            predicted_label = prediction_proba.argmax(axis=1)[0]
     else:
         # Traditional ML prediction
         if hasattr(model, 'predict_proba') and (use_proba or thresholds is not None):
@@ -73,25 +72,25 @@ def predict_single_text(text: str, model, model_type: str = 'traditional_ml',
             
             # Apply custom thresholds if provided
             if thresholds is not None:
-                classes = model.classes_
+                classes = [0, 1, 2]
                 predicted_labels = predict_with_threshold(
-                    prediction_proba, thresholds, list(classes)
+                    prediction_proba, thresholds, classes
                 )
                 predicted_label = predicted_labels[0]
             else:
-                predicted_label = model.classes_[prediction_proba[0].argmax()]
+                predicted_label = prediction_proba[0].argmax()
         else:
             predicted_label = model.predict([cleaned_text])[0]
-        
-        # If label encoder exists, decode
-        if label_encoder is not None and not isinstance(predicted_label, str):
-            predicted_label = label_encoder.inverse_transform([predicted_label])[0]
+    
+    # Convert numeric label to string
+    if isinstance(predicted_label, (int, np.integer)):
+        return LABEL_MAP_REVERSE.get(int(predicted_label), predicted_label)
     
     return predicted_label
 
 
 def predict_batch(texts: list, model, model_type: str = 'traditional_ml',
-                 tokenizer=None, label_encoder=None, max_len=100,
+                 tokenizer=None, max_len=100,
                  thresholds=None, return_proba=False):
     """
     Predict sentiment for multiple texts.
@@ -101,7 +100,6 @@ def predict_batch(texts: list, model, model_type: str = 'traditional_ml',
         model: Loaded model
         model_type: Type of model
         tokenizer: Tokenizer for LSTM
-        label_encoder: Label encoder
         max_len: Maximum sequence length
         thresholds: Dictionary of custom thresholds
         return_proba: Also return prediction probabilities
@@ -115,12 +113,12 @@ def predict_batch(texts: list, model, model_type: str = 'traditional_ml',
     for text in texts:
         if return_proba or thresholds is not None:
             proba = predict_single_text(text, model, model_type, tokenizer, 
-                                       label_encoder, max_len, thresholds=None, 
+                                       max_len, thresholds=None, 
                                        use_proba=True)
             probabilities.append(proba)
         
         pred = predict_single_text(text, model, model_type, tokenizer, 
-                                  label_encoder, max_len, thresholds=thresholds)
+                                  max_len, thresholds=thresholds)
         predictions.append(pred)
     
     if return_proba:
