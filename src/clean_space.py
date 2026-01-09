@@ -1,7 +1,7 @@
 import pandas as pd
 import re
 
-df = pd.read_csv(r"C:\Users\seakl\Documents\I5-AMS\WR\PROJECT\data\Data Collection - Sheet1.csv")
+df = pd.read_csv(r"C:\Users\seakl\Documents\I5-AMS\WR\PROJECT\data\new.csv", encoding="utf-8")
 
 def remove_space_between_khmer(text):
     if pd.isna(text):

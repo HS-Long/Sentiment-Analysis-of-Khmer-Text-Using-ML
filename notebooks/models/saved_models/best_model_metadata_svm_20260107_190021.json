@@ -1,0 +1,27 @@
+{
+    "model_name": "SVM",
+    "model_type": "traditional_ml",
+    "timestamp": "20260107_190021",
+    "performance": {
+        "accuracy": 0.7777777777777778,
+        "f1_macro": 0.7805416250706704,
+        "precision_macro": 0.7910466326271733,
+        "recall_macro": 0.774764363379013,
+        "best_cv_score": 0.6764649091632902
+    },
+    "hyperparameters": {
+        "clf__penalty": "l2",
+        "clf__max_iter": 1000,
+        "clf__loss": "squared_hinge",
+        "clf__dual": true,
+        "clf__C": 100
+    },
+    "class_weight": {
+        "negative": 1.174863387978142,
+        "neutral": 0.821656050955414,
+        "positive": 1.0732113144758735
+    },
+    "files": {
+        "model": "best_model_svm_20260103_142829.pkl"
+    }
+}
