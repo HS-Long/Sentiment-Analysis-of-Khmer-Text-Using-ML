@@ -1,344 +1,486 @@
 # Khmer Sentiment Analysis
 
-A machine learning project for sentiment analysis of Khmer (Cambodian) text using various classification algorithms.
+A comprehensive machine learning system for sentiment analysis of Khmer (Cambodian) language text using multiple classification approaches, from traditional ML to deep learning models.
 
 ## 📋 Project Overview
 
-This project implements sentiment analysis for Khmer text, classifying text into three categories:
-- **Positive** (អវិជ្ជមាន)
+This project implements an end-to-end sentiment analysis pipeline for Khmer text, classifying social media posts, reviews, and comments into three sentiment categories:
+- **Positive** (វិជ្ជមាន)
 - **Neutral** (អព្យាក្រឹត)
-- **Negative** (វិជ្ជមាន)
+- **Negative** (អវិជ្ជមាន)
 
-The project explores multiple machine learning approaches including traditional ML models (Logistic Regression, SVM, Naive Bayes) and ensemble methods (Random Forest, XGBoost, Voting Classifier).
-
-## 📁 Project Structure
-
-```
-PROJECT/
-├── data/
-│   └── Data Collection - Sheet1.csv    # Dataset
-├── notebooks/
-│   └── Notebook.ipynb                  # Exploratory analysis and experiments
-├── src/
-│   ├── __init__.py                     # Package initialization
-│   ├── data_preprocessing.py           # Text preprocessing functions
-│   ├── feature_extraction.py           # TF-IDF vectorization
-│   ├── models.py                       # Model training functions
-│   ├── evaluation.py                   # Evaluation and visualization
-│   ├── train.py                        # Main training script
-│   └── predict.py                      # Prediction script
-├── models/                             # Saved trained models
-├── results/                            # Results and plots
-├── requirements.txt                    # Python dependencies
-└── # Khmer Sentiment Analysis Using Machine Learning
-
-## 📋 Project Overview
-
-This project performs comprehensive sentiment analysis on Khmer text data using multiple machine learning approaches, from traditional ML to deep learning models. The goal is to classify Khmer social media posts, reviews, or news comments into three sentiment categories: **positive**, **neutral**, and **negative**.
+The system explores multiple machine learning approaches including:
+- **Traditional ML**: Logistic Regression, SVM, Naive Bayes, Random Forest, XGBoost
+- **Deep Learning**: Bidirectional LSTM with attention mechanisms
+- **Ensemble Methods**: Voting classifiers for improved accuracy
+- **REST API**: Flask-based API for real-time sentiment prediction
 
 ## 🎯 Key Features
 
-- **Khmer-Specific Preprocessing**: Unicode normalization (NFC), slang handling, special character removal
-- **Multiple ML Models Comparison**:
-  - Traditional ML: Logistic Regression, SVM, Naive Bayes
-  - Deep Learning: Bidirectional LSTM
-- **Comprehensive Evaluation**: Confusion matrices, per-class metrics, error analysis
-- **Class Imbalance Handling**: Balanced class weights for fair evaluation
-- **Visualization**: Performance comparison charts and training curves
+### Advanced Text Processing
+- **Khmer-Specific Preprocessing**: Unicode normalization (NFD→NFC), slang dictionary, special character handling
+- **TF-IDF Vectorization**: N-gram features (unigrams, bigrams, trigrams) with customizable parameters
+- **Class Imbalance Handling**: Automated class weight balancing for fair evaluation
+
+### Multiple ML Approaches
+- **Traditional ML Models**: Grid search hyperparameter optimization for each model
+- **Deep Learning**: Bidirectional LSTM with dropout and early stopping
+- **Threshold Optimization**: ROC curve analysis and optimal threshold selection
+
+### Comprehensive Evaluation
+- **Model Comparison**: Side-by-side performance metrics across all models
+- **Confusion Matrices**: Visual representation of classification results
+- **ROC Curves**: Multi-class ROC analysis with optimal threshold recommendations
+- **Results Tracking**: Automated saving of model metadata and comparison reports
+
+### Production-Ready API
+- **Flask REST API**: Easy integration with web applications
+- **Model Persistence**: Automatic loading of best performing models
+- **Batch Processing**: Support for single text and batch predictions
+- **Error Handling**: Robust error handling and validation
 
 ## 📁 Project Structure
 
 ```
 PROJECT/
-│
-├── Model.ipynb              # Main notebook with all analysis
-├── README.md                # Project documentation
-├── requirements.txt         # Python dependencies
+├── app.py                      # Flask REST API server
+├── train.py                    # Main training pipeline
+├── predict.py                  # Command-line prediction script
+├── test_api.py                 # API testing utilities
+├── setup.py                    # Package setup configuration
+├── requirements.txt            # Python dependencies
+├── README.md                   # This file
 │
 ├── data/
-│   ├── Data Collection - Sheet1.csv  # Original data
-│   └── data_cleaned_all.csv          # Cleaned dataset (1057 samples)
+│   ├── Data Collection - Sheet1.csv  # Original dataset
+│   ├── data_cleaned_all.csv          # Preprocessed data (~1,057 samples)
+│   └── new.csv                       # Additional data
 │
-├── models/                  # Saved models (generated after training)
-│   ├── best_lr_model.pkl
-│   ├── lstm_model.h5
-│   └── lstm_tokenizer.pkl
+├── src/
+│   ├── __init__.py                   # Package initialization
+│   ├── config.py                     # Configuration settings
+│   ├── data_loader.py                # Data loading and cleaning
+│   ├── preprocessing.py              # Khmer text preprocessing
+│   ├── feature_extraction.py         # TF-IDF feature extraction
+│   ├── models.py                     # ML model implementations
+│   ├── deep_learning.py              # LSTM model implementation
+│   ├── evaluation.py                 # Model evaluation and visualization
+│   ├── model_persistence.py          # Save/load model utilities
+│   ├── threshold_optimization.py     # ROC analysis and threshold tuning
+│   └── clean_space.py                # Utility functions
 │
-└── src/
-    └── clean_space.py       # Utility scripts
+├── notebooks/
+│   ├── Model.ipynb                   # Main analysis notebook
+│   ├── models/saved_models/          # Saved model files and metadata
+│   └── results/reports/              # Training results and reports
+│
+├── tests/
+│   ├── test_data_loader.py           # Unit tests for data loading
+│   └── test_preprocessing.py         # Unit tests for preprocessing
+│
+└── results/
+    └── reports/                      # Model comparison reports
 ```
 
 ## 🔧 Installation
 
+### Prerequisites
+- Python 3.8 or higher
+- pip package manager
+- (Optional) Virtual environment
+
+### Setup
+
 1. **Clone or download this project**
 
-2. **Install dependencies**:
+2. **Create a virtual environment (recommended)**:
+```bash
+python -m venv venv
+venv\Scripts\activate  # Windows
+# or
+source venv/bin/activate  # Linux/Mac
+```
+
+3. **Install dependencies**:
 ```bash
 pip install -r requirements.txt
 ```
 
-3. **Required Python Version**: Python 3.8 or higher
+4. **Install the package (optional)**:
+```bash
+pip install -e .
+```
 
 ## 📊 Dataset
 
-- **Size**: 1,057 Khmer text samples
+- **Size**: ~1,057 Khmer text samples
 - **Classes**: 
-  - Positive
-  - Negative  
-  - Neutral
+  - Positive (វិជ្ជមាន)
+  - Neutral (អព្យាក្រឹត)
+  - Negative (អវិជ្ជមាន)
 - **Source**: Social media posts and news comments in Khmer language
 - **Format**: CSV with columns: `text`, `target`
+- **Location**: `data/Data Collection - Sheet1.csv`
 
 ## 🚀 Usage
 
-1. **Open the Jupyter Notebook**:
+### 1. Training Models
+
+Train all models with the full pipeline:
 ```bash
-jupyter notebook Model.ipynb
-```
-
-2. **Run cells sequentially**:
-   - Load and explore data
-   - Preprocess Khmer text
-   - Train traditional ML models (LR, SVM, NB)
-   - Train LSTM model
-   - Compare model performance
-   - Analyze errors and visualize results
-
-3. **Make predictions on new text**:
-```python
-# Example prediction
-new_text = "ខ្ញុំចូលចិត្តផលិតផលនេះណាស់"
-new_text_clean = preprocess_khmer(new_text)
-prediction = best_model.predict([new_text_clean])
-print(f"Sentiment: {prediction[0]}")
-```
-
-## 📈 Model Performance
-
-The notebook includes comprehensive comparison of all models with:
-- Accuracy scores
-- F1-Macro and F1-Weighted scores
-- Confusion matrices
-- Per-class precision, recall, F1-score
-- Training curves (for LSTM)
-
-## 🔍 Khmer-Specific Challenges Addressed
-
-1. **Unicode Normalization**: Proper handling of Khmer Unicode (NFD → NFC)
-2. **Slang Handling**: Dictionary-based normalization of informal Khmer
-3. **Special Markers**: Removal of URL artifacts and special symbols
-4. **Character Range**: Preservation of Khmer Unicode range (U+1780 to U+17FF)
-5. **Class Imbalance**: Balanced class weights for minority classes
-
-## 🎓 Key Findings & Recommendations
-
-### Current Limitations:
-- Small dataset (~1000 samples) limits deep learning performance
-- Limited slang dictionary coverage
-- No BERT-based models yet
-
-### Future Improvements:
-1. **Expand Dataset**: Target 5,000-10,000+ samples
-2. **Add BERT Models**: Fine-tune mBERT or XLM-RoBERTa
-3. **Enhanced Preprocessing**: Comprehensive slang dictionary, negation handling
-4. **Feature Engineering**: Character n-grams, text length features
-5. **Cross-Validation**: K-fold CV for robust evaluation
-
-## 📚 Requirements
-
-See [requirements.txt](requirements.txt) for full list. Main dependencies:
-- pandas, numpy
-- scikit-learn (traditional ML)
-- tensorflow/keras (LSTM)
-- matplotlib, seaborn (visualization)
-
-## 🤝 Contributing
-
-To improve this project:
-1. Expand the labeled Khmer dataset
-2. Add more slang mappings to the preprocessing function
-3. Implement BERT-based models
-4. Enhance error analysis with linguistic features
-
-## 📝 License
-
-This project is for educational purposes. Feel free to use and modify.
-
-## 👤 Author
-
-Created as part of the I5-AMS WR project focusing on Khmer NLP and sentiment analysis.
-
----
-
-**Note**: This project demonstrates practical implementation of sentiment analysis on a low-resource language (Khmer) with limited data. Performance can be significantly improved with more training data and advanced models.                           # This file
-```
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-- Python 3.8 or higher
-- pip package manager
-
-### Installation
-
-1. Clone or download this project
-
-2. Install required dependencies:
-```bash
-pip install -r requirements.txt
-```
-
-3. (Optional) Install XGBoost for advanced models:
-```bash
-pip install xgboost
-```
-
-## 📊 Dataset
-
-The dataset should be in CSV format with the following columns:
-- `text`: Khmer text to analyze
-- `target`: Sentiment label (positive, neutral, negative)
-
-Place your dataset in the `data/` directory.
-
-## 🔧 Usage
-
-### Training Models
-
-Train all models with basic settings:
-```bash
-cd src
 python train.py
 ```
 
-Train specific models:
+Train without deep learning (faster):
 ```bash
-python train.py --models lr svm nb
+python train.py --no-lstm
 ```
 
-Train with enhanced preprocessing:
+Specify custom data path:
 ```bash
-python train.py --enhanced
+python train.py --data_path path/to/your/data.csv
 ```
 
-Train with ensemble voting classifier:
+The training script will:
+- Load and preprocess the data
+- Train multiple ML models with hyperparameter optimization
+- Train LSTM model (if enabled)
+- Compare all models and generate reports
+- Save the best model automatically
+- Generate confusion matrices and ROC curves
+- Save results to `results/reports/`
+
+### 2. Making Predictions
+
+**Command-line prediction** (single text):
 ```bash
-python train.py --ensemble --save-models
+python predict.py --model_path models/saved_models/best_model_*.pkl --text "ខ្ញុំចូលចិត្តផលិតផលនេះណាស់"
 ```
 
-Available options:
-- `--data-path`: Path to dataset (default: `data/Data Collection - Sheet1.csv`)
-- `--models`: Models to train: `all`, `lr`, `svm`, `nb`, `rf`, `xgb`
-- `--enhanced`: Use enhanced preprocessing with stopwords removal
-- `--ensemble`: Train voting ensemble classifier
-- `--save-models`: Save trained models to disk
-- `--model-dir`: Directory to save models (default: `models`)
-- `--result-dir`: Directory to save results (default: `results`)
-
-### Making Predictions
-
-Predict sentiment for new text:
+**Batch prediction** (from file):
 ```bash
-python predict.py --text "អរគុណច្រើន" --model models/svm.pkl
+python predict.py --model_path models/saved_models/best_model_*.pkl --input_file path/to/texts.csv
 ```
 
-Options:
-- `--text`: Khmer text to analyze (required)
-- `--vectorizer`: Path to saved vectorizer (default: `models/vectorizer.pkl`)
-- `--model`: Path to saved model (default: `models/svm.pkl`)
-- `--label-encoder`: Path to saved label encoder (default: `models/label_encoder.pkl`)
+**With custom thresholds** (for optimized classification):
+```bash
+python predict.py --model_path models/saved_models/best_model_*.pkl --text "អរគុណច្រើន" --thresholds_path models/saved_models/thresholds.json
+```
 
-## 📚 Module Documentation
+### 3. Running the API Server
 
-### data_preprocessing.py
+Start the Flask API server:
+```bash
+python app.py
+```
 
-Functions for cleaning and preprocessing Khmer text:
-- `khmer_preprocess(text)`: Basic text cleaning
-- `khmer_preprocess_enhanced(text)`: Enhanced cleaning with stopword removal
-- `load_and_clean_data(filepath)`: Load and preprocess dataset
-- `encode_labels(df)`: Encode sentiment labels to numeric values
+The API will be available at `http://localhost:5000`
 
-### feature_extraction.py
+**API Endpoints**:
 
-TF-IDF feature extraction:
-- `create_tfidf_vectorizer()`: Create standard vectorizer
-- `create_enhanced_vectorizer()`: Create enhanced vectorizer with optimized parameters
-- `extract_features(df)`: Extract TF-IDF features from text
-- `split_data(X, y)`: Split data into train/test sets
+- **GET `/`**: Home page with API documentation
+- **POST `/predict`**: Predict sentiment for a single text
+  ```bash
+  curl -X POST http://localhost:5000/predict \
+    -H "Content-Type: application/json" \
+    -d '{"text": "ខ្ញុំចូលចិត្តផលិតផលនេះណាស់"}'
+  ```
+  
+- **POST `/predict_batch`**: Predict sentiment for multiple texts
+  ```bash
+  curl -X POST http://localhost:5000/predict_batch \
+    -H "Content-Type: application/json" \
+    -d '{"texts": ["អរគុណច្រើន", "អាក្រក់ណាស់"]}'
+  ```
 
-### models.py
+- **GET `/model_info`**: Get information about the loaded model
+- **GET `/health`**: Health check endpoint
 
-Model training functions:
-- `train_logistic_regression()`: Train Logistic Regression with grid search
-- `train_svm()`: Train Support Vector Machine
-- `train_naive_bayes()`: Train Multinomial Naive Bayes
-- `train_random_forest()`: Train Random Forest classifier
-- `train_xgboost()`: Train XGBoost classifier
-- `train_voting_classifier()`: Train ensemble voting classifier
-- `save_model()` / `load_model()`: Save/load trained models
+**Test the API**:
+```bash
+python test_api.py
+```
 
-### evaluation.py
+### 4. Using the Jupyter Notebook
 
-Model evaluation and visualization:
-- `evaluate_model()`: Calculate accuracy, F1 score, and print classification report
-- `plot_confusion_matrix()`: Visualize confusion matrix
-- `plot_sentiment_distribution()`: Plot label distribution
-- `compare_models()`: Compare multiple models and visualize results
-- `save_results()`: Save evaluation results to CSV
+For interactive exploration and analysis:
+```bash
+jupyter notebook notebooks/Model.ipynb
+```
+
+The notebook includes:
+- Data exploration and visualization
+- Step-by-step preprocessing demonstration
+- Model training and comparison
+- Error analysis
+- Performance visualization
 
 ## 📈 Model Performance
 
-Based on the experimental results:
+Based on experimental results with the Khmer dataset:
 
-| Model | Accuracy |
-|-------|----------|
-| Logistic Regression | ~46% |
-| SVM | ~52% |
-| Naive Bayes | ~49% |
-| Random Forest | ~50-55% |
-| XGBoost | ~50-55% |
-| Voting Classifier | ~52-56% |
+| Model | Approach | Typical Accuracy | Notes |
+|-------|----------|------------------|-------|
+| **SVM** | Traditional ML | ~52-58% | Best traditional ML model |
+| **Random Forest** | Ensemble | ~50-55% | Good generalization |
+| **Logistic Regression** | Traditional ML | ~46-50% | Fast, interpretable |
+| **XGBoost** | Gradient Boosting | ~50-55% | Powerful for structured data |
+| **Naive Bayes** | Probabilistic | ~49-52% | Fast training |
+| **Voting Classifier** | Ensemble | ~52-56% | Combines multiple models |
+| **Bidirectional LSTM** | Deep Learning | ~45-55% | Limited by dataset size |
 
-*Note: Results may vary based on dataset and hyperparameters*
+*Note: Performance varies based on data preprocessing, hyperparameters, and train/test split*
 
-## 🔍 Key Features
+### Performance Factors:
+- **Dataset Size**: ~1,000 samples is limited for deep learning
+- **Class Imbalance**: Handled via class weights
+- **Preprocessing**: Khmer-specific cleaning significantly impacts results
+- **Feature Engineering**: TF-IDF with n-grams provides good baseline features
 
-### Text Preprocessing
-- Unicode normalization for Khmer characters
-- Removal of numbers and punctuation
-- Khmer stopwords removal (enhanced mode)
-- Whitespace normalization
+## 🔍 Key Features Explained
 
-### Feature Engineering
-- TF-IDF vectorization with n-grams (unigrams, bigrams, trigrams)
-- Configurable feature limits and document frequency filters
-- Sublinear TF scaling for better performance
+### 1. Khmer-Specific Preprocessing
 
-### Model Training
-- Automated class weight balancing for imbalanced datasets
-- Grid search hyperparameter optimization
-- Cross-validation for robust evaluation
-- Support for multiple model architectures
+The preprocessing pipeline handles unique challenges of Khmer text:
 
-### Evaluation
-- Comprehensive metrics (accuracy, F1-score, precision, recall)
-- Confusion matrix visualization
-- Model comparison charts
-- Results export to CSV
+```python
+from src.preprocessing import preprocess_khmer, KHMER_SLANG
 
-## 💡 Improvement Strategies
+# Preprocessing steps:
+# 1. Unicode normalization (NFD → NFC)
+# 2. Slang dictionary mapping
+# 3. Remove special characters and URLs
+# 4. Preserve Khmer Unicode range (U+1780 to U+17FF)
+# 5. Normalize whitespace
 
-To improve model performance:
+text = "ខ្ញុំចូលចិត្តផលិតផលនេះណាស់"
+cleaned = preprocess_khmer(text, KHMER_SLANG)
+```
 
-1. **Collect More Data**: Sentiment analysis benefits greatly from larger, diverse datasets
-2. **Advanced Preprocessing**: Implement Khmer-specific stemming/lemmatization
-3. **Deep Learning**: Use pre-trained models like XLM-RoBERTa for multilingual understanding
-4. **Feature Engineering**: Add character-level features, text length, sentiment lexicons
-5. **Data Augmentation**: Use back-translation, synonym replacement
+### 2. TF-IDF Feature Extraction
 
+Configurable TF-IDF vectorization with multiple n-gram levels:
 
+```python
+from src.feature_extraction import create_tfidf_vectorizer
+
+# Creates vectorizer with:
+# - Unigrams, bigrams, and trigrams
+# - Max 5000 features
+# - Min/max document frequency filtering
+# - Sublinear TF scaling
+
+vectorizer = create_tfidf_vectorizer()
+```
+
+### 3. Automated Model Training
+
+Grid search with cross-validation for each model:
+
+```python
+from src.models import train_model_with_search
+
+# Automatically:
+# - Performs grid search
+# - Uses stratified K-fold CV
+# - Applies class weights
+# - Saves best parameters
+
+model = train_model_with_search(pipeline, X_train, y_train, param_grid)
+```
+
+### 4. Threshold Optimization
+
+ROC curve analysis for optimal classification thresholds:
+
+```python
+from src.threshold_optimization import get_optimal_thresholds_multiclass
+
+# Analyzes ROC curves for each class
+# Finds optimal thresholds maximizing F1-score
+# Generates visualization and recommendations
+
+thresholds = get_optimal_thresholds_multiclass(y_true, y_proba)
+```
+
+## 📚 Module Documentation
+
+### Core Modules
+
+#### `src/config.py`
+Configuration settings for the entire project:
+- Random seeds for reproducibility
+- Model parameters
+- File paths
+- Feature extraction settings
+
+#### `src/data_loader.py`
+Data loading and cleaning utilities:
+- `load_data()`: Load CSV data
+- `clean_data()`: Remove duplicates and missing values
+- `prepare_train_test_split()`: Stratified train/test split
+- `get_class_distribution()`: Analyze class balance
+
+#### `src/preprocessing.py`
+Khmer text preprocessing:
+- `preprocess_khmer()`: Main preprocessing function
+- `KHMER_SLANG`: Dictionary of informal Khmer mappings
+- Unicode normalization and character filtering
+
+#### `src/feature_extraction.py`
+Feature extraction and engineering:
+- `create_tfidf_vectorizer()`: Create TF-IDF vectorizer
+- `compute_class_weights()`: Calculate balanced class weights
+
+#### `src/models.py`
+Machine learning model implementations:
+- `create_*_pipeline()`: Create model pipelines (LR, SVM, NB, RF, XGBoost)
+- `get_hyperparameter_grids()`: Get parameter grids for grid search
+- `train_model_with_search()`: Train with hyperparameter optimization
+
+#### `src/deep_learning.py`
+Deep learning model implementations:
+- `create_lstm_model()`: Build Bidirectional LSTM
+- `prepare_sequences()`: Tokenize and pad sequences
+- `train_lstm_model()`: Train LSTM with callbacks
+
+#### `src/evaluation.py`
+Model evaluation and visualization:
+- `compare_models()`: Compare multiple models
+- `plot_model_comparison()`: Visualize comparison
+- `plot_confusion_matrix()`: Generate confusion matrices
+
+#### `src/model_persistence.py`
+Model saving and loading:
+- `save_model()`: Save model with metadata
+- `load_model()`: Load saved model
+- `save_comparison_report()`: Save evaluation results
+
+#### `src/threshold_optimization.py`
+ROC analysis and threshold tuning:
+- `compute_roc_curves_multiclass()`: Compute multi-class ROC
+- `get_optimal_thresholds_multiclass()`: Find optimal thresholds
+- `plot_roc_curves_multiclass()`: Visualize ROC curves
+- `predict_with_threshold()`: Predict with custom thresholds
+
+## 🔬 Khmer-Specific Challenges Addressed
+
+1. **Unicode Complexity**: Khmer uses combining characters requiring NFD→NFC normalization
+2. **Limited Resources**: Low-resource language with limited NLP tools
+3. **Informal Text**: Social media contains slang and non-standard spellings
+4. **Code-Switching**: Mix of Khmer and English text
+5. **Class Imbalance**: Uneven distribution of sentiment classes
+6. **Small Dataset**: Limited labeled data (~1,000 samples)
+
+## 💡 Performance Improvement Strategies
+
+### Immediate Improvements:
+1. **Data Collection**: Expand dataset to 5,000-10,000+ samples
+2. **Data Augmentation**: Back-translation, synonym replacement, paraphrasing
+3. **Slang Dictionary**: Expand informal Khmer mappings
+4. **Feature Engineering**: Add char n-grams, text length, punctuation features
+
+### Advanced Techniques:
+1. **Pre-trained Models**: Fine-tune mBERT, XLM-RoBERTa, or CamBERT
+2. **Transfer Learning**: Leverage multilingual models
+3. **Ensemble Methods**: Combine traditional ML + deep learning
+4. **Active Learning**: Prioritize labeling of uncertain samples
+5. **Cross-Validation**: K-fold validation for robust evaluation
+
+### Production Optimization:
+1. **Model Compression**: Quantization, pruning for faster inference
+2. **Caching**: Cache preprocessed features
+3. **Batch Processing**: Process multiple texts together
+4. **API Optimization**: Async processing, load balancing
+
+## 🧪 Testing
+
+Run unit tests:
+```bash
+pytest tests/
+```
+
+Run specific test files:
+```bash
+pytest tests/test_preprocessing.py
+pytest tests/test_data_loader.py
+```
+
+## 📝 API Examples
+
+### Python Client Example
+
+```python
+import requests
+import json
+
+# API endpoint
+url = "http://localhost:5000/predict"
+
+# Single prediction
+data = {"text": "ខ្ញុំចូលចិត្តផលិតផលនេះណាស់"}
+response = requests.post(url, json=data)
+result = response.json()
+
+print(f"Sentiment: {result['sentiment']}")
+print(f"Confidence: {result['confidence']:.2%}")
+print(f"Probabilities: {result['probabilities']}")
+```
+
+### JavaScript/Node.js Example
+
+```javascript
+const axios = require('axios');
+
+async function predictSentiment(text) {
+  try {
+    const response = await axios.post('http://localhost:5000/predict', {
+      text: text
+    });
+    console.log('Sentiment:', response.data.sentiment);
+    console.log('Confidence:', response.data.confidence);
+  } catch (error) {
+    console.error('Error:', error);
+  }
+}
+
+predictSentiment('ខ្ញុំចូលចិត្តផលិតផលនេះណាស់');
+```
+
+## 🤝 Contributing
+
+Contributions are welcome! Here's how you can help:
+
+1. **Data Collection**: Help label more Khmer text samples
+2. **Slang Dictionary**: Expand the informal Khmer mappings
+3. **Model Improvements**: Implement advanced models (BERT, etc.)
+4. **Feature Engineering**: Add new features or preprocessing steps
+5. **Documentation**: Improve docs and add examples
+6. **Testing**: Add unit tests and integration tests
+
+## 📄 License
+
+This project is for educational and research purposes. Feel free to use and modify with attribution.
+
+## 👤 Authors
+
+Created as part of the **I5-AMS WR Project** focusing on Khmer NLP and sentiment analysis.
+
+## 🙏 Acknowledgments
+
+- Khmer language resources and Unicode consortium
+- scikit-learn and TensorFlow communities
+- Open-source NLP research community
+
+## 📞 Support
+
+For questions or issues:
+1. Check the documentation above
+2. Review the `notebooks/Model.ipynb` for examples
+3. Open an issue on the project repository
 
 ---
 
-**Note**: This project is designed for Khmer language sentiment analysis. Results may vary based on dataset quality, size, and domain specificity.
+**Last Updated**: January 2026
+
+**Note**: This project demonstrates practical sentiment analysis for Khmer, a low-resource language. Performance can be significantly improved with more training data and advanced transformer-based models.
