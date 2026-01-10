@@ -217,19 +217,18 @@ The notebook includes:
 
 ## 📈 Model Performance
 
-Based on experimental results with the Khmer dataset:
+Based on experimental results with the Khmer dataset (~1,057 samples):
 
-| Model | Approach | Typical Accuracy | Notes |
-|-------|----------|------------------|-------|
-| **SVM** | Traditional ML | ~52-58% | Best traditional ML model |
-| **Random Forest** | Ensemble | ~50-55% | Good generalization |
-| **Logistic Regression** | Traditional ML | ~46-50% | Fast, interpretable |
-| **XGBoost** | Gradient Boosting | ~50-55% | Powerful for structured data |
-| **Naive Bayes** | Probabilistic | ~49-52% | Fast training |
-| **Voting Classifier** | Ensemble | ~52-56% | Combines multiple models |
-| **Bidirectional LSTM** | Deep Learning | ~45-55% | Limited by dataset size |
+| Model | Approach | Accuracy | F1-Macro | Precision | Recall | Notes |
+|-------|----------|----------|----------|-----------|--------|-------|
+| **Bidirectional LSTM** | Deep Learning | **85.66%** | **85.84%** | 88.97% | 84.57% | Best overall performance |
+| **SVM** | Traditional ML | 84.11% | 84.06% | 85.54% | 83.26% | Best traditional ML model |
+| **Logistic Regression** | Traditional ML | 83.85% | 83.76% | 85.06% | 83.03% | Fast, interpretable |
+| **XGBoost** | Gradient Boosting | 82.69% | 82.55% | 84.18% | 81.76% | Powerful for structured data |
+| **Random Forest** | Ensemble | 75.97% | 75.63% | 79.24% | 74.56% | Good generalization |
+| **Naive Bayes** | Probabilistic | 70.03% | 69.80% | 71.75% | 68.94% | Fast training |
 
-*Note: Performance varies based on data preprocessing, hyperparameters, and train/test split*
+*Note: Results from training on January 9, 2026. Performance metrics are from test set evaluation.*
 
 ### Performance Factors:
 - **Dataset Size**: ~1,000 samples is limited for deep learning
@@ -463,6 +462,15 @@ Contributions are welcome! Here's how you can help:
 This project is for educational and research purposes. Feel free to use and modify with attribution.
 
 ## 👤 Authors
+
+**Group-02 I5-AMS-A**
+
+Team Members:
+- **Seaklong HENG**
+- **Solita Chhorn**
+- **Rongravidwin HAYSAVIN**
+- **Ratanakvichea LONG**
+- **Ratanak VITOU**
 
 Created as part of the **I5-AMS WR Project** focusing on Khmer NLP and sentiment analysis.
 
